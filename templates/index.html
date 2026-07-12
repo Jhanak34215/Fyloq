@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- ===== BASIC META START ===== -->
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>QuickVault - Secure File Sharing</title>
+
+    <!-- ===== BASIC META END ===== -->
+
+
+    <!-- ===== GOOGLE FONT START ===== -->
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- ===== GOOGLE FONT END ===== -->
+
+
+    <!-- ===== MAIN CSS START ===== -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <!-- ===== MAIN CSS END ===== -->
+
+</head>
+
+<body>
+
+
+    <!-- ====================================================== -->
+    <!-- ===== NAVBAR START ===== -->
+    <!-- ====================================================== -->
+
+    <header class="navbar">
+
+        <a href="/" class="brand">
+
+            <span class="brand-icon">
+                🔒
+            </span>
+
+            <span class="brand-name">
+                QuickVault
+            </span>
+
+        </a>
+
+
+        <nav class="nav-links">
+
+            <a href="#home" class="active">
+                Home
+            </a>
+
+            <a href="#features">
+                Features
+            </a>
+
+            <a href="#upload">
+                Upload
+            </a>
+
+            <a href="#how-it-works">
+                How It Works
+            </a>
+
+        </nav>
+
+
+        <a href="#upload" class="nav-upload-button">
+            Upload File
+        </a>
+
+    </header>
+
+    <!-- ====================================================== -->
+    <!-- ===== NAVBAR END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== HERO SECTION START ===== -->
+    <!-- ====================================================== -->
+
+    <main>
+
+        <section class="hero" id="home">
+
+            <!-- ===== HERO LEFT CONTENT START ===== -->
+
+            <div class="hero-left">
+
+                <span class="hero-badge">
+                    🔐 Secure Temporary File Transfer
+                </span>
+
+                <h1>
+
+                    Secure. Simple.
+
+                    <span>
+                        Share Anywhere.
+                    </span>
+
+                </h1>
+
+                <p class="hero-description">
+
+                    Upload your files securely and access them from any
+                    device using a unique access code and PIN.
+
+                    No email login. No permanent storage.
+
+                </p>
+
+
+                <div class="hero-buttons">
+
+                    <a href="#upload" class="primary-button">
+
+                        <span>
+                            Upload File
+                        </span>
+
+                        <span class="button-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="openDownloadButton"
+                    >
+
+                        Download File
+
+                    </button>
+
+                </div>
+
+
+                <div class="hero-small-info">
+
+                    <span>
+                        ✓ No account required
+                    </span>
+
+                    <span>
+                        ✓ Auto deletion
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- ===== HERO LEFT CONTENT END ===== -->
+
+
+            <!-- ===== HERO RIGHT ILLUSTRATION START ===== -->
+
+            <div class="hero-right">
+
+                <div class="hero-illustration">
+
+                    <span class="spark spark-one">
+                        +
+                    </span>
+
+                    <span class="spark spark-two">
+                        +
+                    </span>
+
+                    <span class="spark spark-three">
+                        ✦
+                    </span>
+
+
+                    <div class="cloud">
+
+                        <div class="cloud-lock">
+                            🔒
+                        </div>
+
+                    </div>
+
+
+                    <div class="connection-line"></div>
+
+
+                    <div class="document document-left">
+
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                    </div>
+
+
+                    <div class="document document-right">
+
+                        <div class="image-circle"></div>
+
+                        <div class="image-mountain"></div>
+
+                    </div>
+
+
+                    <div class="folder">
+
+                        <div class="folder-tab"></div>
+
+                        <div class="folder-check">
+                            ✓
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ===== HERO RIGHT ILLUSTRATION END ===== -->
+
+        </section>
+
+    <!-- ====================================================== -->
+    <!-- ===== HERO SECTION END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== FEATURES STRIP START ===== -->
+    <!-- ====================================================== -->
+
+        <section class="features-strip" id="features">
+
+            <div class="feature-strip-item">
+
+                <div class="feature-strip-icon">
+                    👤
+                </div>
+
+                <div>
+
+                    <h3>
+                        No Login
+                    </h3>
+
+                    <p>
+                        Required
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="feature-strip-item">
+
+                <div class="feature-strip-icon">
+                    🛡️
+                </div>
+
+                <div>
+
+                    <h3>
+                        Secure File
+                    </h3>
+
+                    <p>
+                        Protection
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="feature-strip-item">
+
+                <div class="feature-strip-icon">
+                    ⏱️
+                </div>
+
+                <div>
+
+                    <h3>
+                        Automatic
+                    </h3>
+
+                    <p>
+                        File Deletion
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="feature-strip-item">
+
+                <div class="feature-strip-icon">
+                    📱
+                </div>
+
+                <div>
+
+                    <h3>
+                        Access From
+                    </h3>
+
+                    <p>
+                        Any Device
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    <!-- ====================================================== -->
+    <!-- ===== FEATURES STRIP END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== UPLOAD SECTION START ===== -->
+    <!-- ====================================================== -->
+
+        <section class="upload-section" id="upload">
+
+            <div class="section-heading">
+
+                <span class="section-label">
+                    QUICK UPLOAD
+                </span>
+
+                <h2>
+                    Send your files securely
+                </h2>
+
+                <p>
+
+                    Choose a file, set an expiry time and create a secure
+                    access code instantly.
+
+                </p>
+
+            </div>
+
+
+            <div class="upload-dashboard">
+
+                <!-- ===== UPLOAD DASHBOARD TOPBAR START ===== -->
+
+                <div class="dashboard-topbar">
+
+                    <div class="dashboard-brand">
+
+                        <span class="dashboard-brand-icon">
+                            🔒
+                        </span>
+
+                        <span>
+                            QuickVault
+                        </span>
+
+                    </div>
+
+
+                    <div class="dashboard-security">
+
+                        <span class="security-dot"></span>
+
+                        Secure Connection
+
+                    </div>
+
+                </div>
+
+                <!-- ===== UPLOAD DASHBOARD TOPBAR END ===== -->
+
+
+                <!-- ===== UPLOAD DASHBOARD BODY START ===== -->
+
+                <div class="dashboard-body">
+
+                    <div class="dashboard-left-panel">
+
+                        <span class="dashboard-small-label">
+                            SECURE FILE TRANSFER
+                        </span>
+
+                        <h3>
+
+                            Upload your file
+
+                            <span>
+                                securely.
+                            </span>
+
+                        </h3>
+
+                        <p>
+
+                            Your file will be protected with an access code,
+                            optional PIN and automatic expiration.
+
+                        </p>
+
+
+                        <div class="dashboard-security-list">
+
+                            <div>
+                                <span>✓</span>
+                                Temporary storage
+                            </div>
+
+                            <div>
+                                <span>✓</span>
+                                Unique access code
+                            </div>
+
+                            <div>
+                                <span>✓</span>
+                                PIN protection
+                            </div>
+
+                            <div>
+                                <span>✓</span>
+                                Automatic deletion
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="dashboard-upload-card">
+
+                        <form
+                            id="uploadForm"
+                            class="upload-form"
+                            enctype="multipart/form-data"
+                        >
+
+                            <!-- ===== FILE DROP AREA START ===== -->
+
+                            <label
+                                class="file-drop-area"
+                                id="fileDropArea"
+                                for="fileInput"
+                            >
+
+                                <input
+                                    type="file"
+                                    id="fileInput"
+                                    name="file"
+                                    hidden
+                                >
+
+                                <div class="drop-icon">
+                                    ⇧
+                                </div>
+
+                                <h4>
+                                    Drag and drop your file
+                                </h4>
+
+                                <p>
+                                    or click to browse from your computer
+                                </p>
+
+                                <span class="choose-file-button">
+                                    Choose File
+                                </span>
+
+                                <small>
+                                    PDF, DOCX, XLSX, PPTX, JPG, PNG, ZIP
+                                </small>
+
+                                <small>
+                                    Maximum file size: 10 MB
+                                </small>
+
+                            </label>
+
+                            <!-- ===== FILE DROP AREA END ===== -->
+
+
+                            <!-- ===== SELECTED FILE START ===== -->
+
+                            <div
+                                class="selected-file"
+                                id="selectedFile"
+                            >
+
+                                <div class="selected-file-icon">
+                                    📄
+                                </div>
+
+                                <div class="selected-file-details">
+
+                                    <strong id="selectedFileName">
+                                        No file selected
+                                    </strong>
+
+                                    <span id="selectedFileSize">
+                                        Select a file to continue
+                                    </span>
+
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="remove-file-button"
+                                    id="removeFileButton"
+                                >
+                                    ×
+                                </button>
+
+                            </div>
+
+                            <!-- ===== SELECTED FILE END ===== -->
+
+
+                            <!-- ===== UPLOAD SETTINGS START ===== -->
+
+                            <div class="upload-settings">
+
+                                <div class="form-group">
+
+                                    <label for="expiryTime">
+                                        File expiry
+                                    </label>
+
+                                    <select id="expiryTime">
+
+                                        <option value="10">
+                                            10 Minutes
+                                        </option>
+
+                                        <option value="60" selected>
+                                            1 Hour
+                                        </option>
+
+                                        <option value="360">
+                                            6 Hours
+                                        </option>
+
+                                        <option value="1440">
+                                            24 Hours
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="form-group">
+
+                                    <label for="filePin">
+                                        Optional PIN
+                                    </label>
+
+                                    <input
+                                        type="password"
+                                        id="filePin"
+                                        maxlength="4"
+                                        inputmode="numeric"
+                                        placeholder="4-digit PIN"
+                                    >
+
+                                </div>
+
+                            </div>
+
+                            <!-- ===== UPLOAD SETTINGS END ===== -->
+
+
+                            <!-- ===== ONE TIME DOWNLOAD START ===== -->
+
+                            <label class="one-time-option">
+
+                                <input
+                                    type="checkbox"
+                                    id="oneTimeDownload"
+                                >
+
+                                <span class="custom-checkbox"></span>
+
+                                <span>
+
+                                    Delete file after first download
+
+                                </span>
+
+                            </label>
+
+                            <!-- ===== ONE TIME DOWNLOAD END ===== -->
+
+                            <!-- ===== UPLOAD PROGRESS START ===== -->
+                             
+                                <div
+                                    class="upload-progress-wrapper"
+                                    id="uploadProgressWrapper"
+                                >
+
+                                <div class="upload-progress-info">
+
+                                    <span id="uploadProgressText">
+                                        Uploading file...
+                                    </span>
+
+                                    <strong id="uploadProgressPercent">
+                                        0%
+                                    </strong>
+
+                                </div>
+
+                                <div class="upload-progress-track">
+
+                                    <div
+                                        class="upload-progress-bar"
+                                        id="uploadProgressBar"
+                                    ></div>
+
+                                </div>
+
+                                    <button
+                                        type="button"
+                                        class="cancel-upload-button"
+                                        id="cancelUploadButton"
+                                    >
+                                        Cancel Upload
+                                    </button>
+
+                                </div>
+
+                            <!-- ===== UPLOAD PROGRESS END ===== -->
+
+                        
+                            <!-- ===== UPLOAD BUTTON START ===== -->
+
+                            <button
+                                type="submit"
+                                class="secure-upload-button"
+                            >
+
+                                <span>
+                                    🔒
+                                </span>
+
+                                Upload Securely
+
+                            </button>
+
+                            <!-- ===== UPLOAD BUTTON END ===== -->
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+                <!-- ===== UPLOAD DASHBOARD BODY END ===== -->
+
+            </div>
+
+        </section>
+
+    <!-- ====================================================== -->
+    <!-- ===== UPLOAD SECTION END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== HOW IT WORKS SECTION START ===== -->
+    <!-- ====================================================== -->
+
+        <section class="how-it-works" id="how-it-works">
+
+            <div class="section-heading">
+
+                <span class="section-label">
+                    HOW IT WORKS
+                </span>
+
+                <h2>
+                    Share a file in three simple steps
+                </h2>
+
+                <p>
+
+                    No personal email login and no complicated setup.
+
+                </p>
+
+            </div>
+
+
+            <div class="steps-grid">
+
+                <div class="step-card">
+
+                    <span class="step-number">
+                        01
+                    </span>
+
+                    <div class="step-icon">
+                        ⇧
+                    </div>
+
+                    <h3>
+                        Upload File
+                    </h3>
+
+                    <p>
+
+                        Select the document, image or archive that you
+                        want to transfer.
+
+                    </p>
+
+                </div>
+
+
+                <div class="step-card">
+
+                    <span class="step-number">
+                        02
+                    </span>
+
+                    <div class="step-icon">
+                        🔑
+                    </div>
+
+                    <h3>
+                        Get Access Code
+                    </h3>
+
+                    <p>
+
+                        QuickVault generates a secure access code and
+                        optional PIN.
+
+                    </p>
+
+                </div>
+
+
+                <div class="step-card">
+
+                    <span class="step-number">
+                        03
+                    </span>
+
+                    <div class="step-icon">
+                        ↓
+                    </div>
+
+                    <h3>
+                        Download Anywhere
+                    </h3>
+
+                    <p>
+
+                        Open QuickVault on another device and retrieve
+                        your file securely.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    <!-- ====================================================== -->
+    <!-- ===== HOW IT WORKS SECTION END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== FOOTER START ===== -->
+    <!-- ====================================================== -->
+
+        <footer class="footer">
+
+            <div class="footer-brand">
+
+                <span class="brand-icon">
+                    🔒
+                </span>
+
+                <div>
+
+                    <strong>
+                        QuickVault
+                    </strong>
+
+                    <p>
+                        Secure temporary file sharing.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <p class="footer-copyright">
+
+                © 2026 QuickVault. Developed by Jhanak Uprade.
+
+            </p>
+
+        </footer>
+
+    <!-- ====================================================== -->
+    <!-- ===== FOOTER END ===== -->
+    <!-- ====================================================== -->
+
+    </main>
+<!-- ====================================================== -->
+<!-- ===== UPLOAD SUCCESS MODAL START ===== -->
+<!-- ====================================================== -->
+
+<div class="success-modal-overlay" id="successModal">
+
+    <div class="success-modal">
+
+        <!-- ===== SUCCESS CLOSE BUTTON START ===== -->
+
+        <button
+            type="button"
+            class="success-close-button"
+            id="closeSuccessButton"
+        >
+            ×
+        </button>
+
+        <!-- ===== SUCCESS CLOSE BUTTON END ===== -->
+
+
+        <!-- ===== SUCCESS ICON START ===== -->
+
+        <div class="success-check-icon">
+            ✓
+        </div>
+
+        <!-- ===== SUCCESS ICON END ===== -->
+
+
+        <!-- ===== SUCCESS HEADING START ===== -->
+
+        <span class="success-small-label">
+            UPLOAD COMPLETE
+        </span>
+
+        <h2>
+            File uploaded successfully
+        </h2>
+
+        <p class="success-description">
+
+            Save this access code. You will need it to
+            download your file from another device.
+
+        </p>
+
+        <!-- ===== SUCCESS HEADING END ===== -->
+
+
+        <!-- ===== SUCCESS FILE DETAILS START ===== -->
+
+        <div class="success-file-card">
+
+            <div class="success-file-icon">
+                📄
+            </div>
+
+            <div class="success-file-info">
+
+                <strong id="successFileName">
+                    document.pdf
+                </strong>
+
+                <span id="successFileSize">
+                    0 KB
+                </span>
+
+            </div>
+
+        </div>
+
+        <!-- ===== SUCCESS FILE DETAILS END ===== -->
+
+
+        <!-- ===== ACCESS CODE BOX START ===== -->
+
+        <div class="access-code-section">
+
+            <span class="access-code-label">
+                YOUR ACCESS CODE
+            </span>
+
+            <div class="access-code-box">
+
+                <strong id="successAccessCode">
+                    000000
+                </strong>
+
+                <button
+                    type="button"
+                    class="copy-code-button"
+                    id="copyCodeButton"
+                >
+                    Copy
+                </button>
+
+            </div>
+
+            <span
+                class="copy-status-message"
+                id="copyStatusMessage"
+            >
+            </span>
+
+        </div>
+
+        <!-- ===== ACCESS CODE BOX END ===== -->
+
+        <!-- ===== SUCCESS QR AND TIMER START ===== -->
+
+<div class="success-qr-timer">
+
+    <div class="success-qr-box">
+
+        <span class="success-info-label">
+            SCAN TO ACCESS
+        </span>
+
+        <img
+            id="successQrCode"
+            class="success-qr-image"
+            src=""
+            alt="QuickVault access QR code"
+        >
+
+        <small>
+            PIN is not included in the QR code
+        </small>
+
+    </div>
+
+
+    <div class="success-timer-box">
+
+        <span class="success-info-label">
+            FILE EXPIRES IN
+        </span>
+
+        <strong id="expiryCountdown">
+            --:--:--
+        </strong>
+
+        <p>
+            File will be deleted automatically
+            after expiry.
+        </p>
+
+    </div>
+
+</div>
+
+<!-- ===== SUCCESS QR AND TIMER END ===== -->
+
+
+
+        <!-- ===== SUCCESS DETAILS GRID START ===== -->
+
+        <div class="success-details-grid">
+
+            <div class="success-detail-item">
+
+                <span>
+                    PIN Protection
+                </span>
+
+                <strong id="successPinStatus">
+                    Not enabled
+                </strong>
+
+            </div>
+
+
+            <div class="success-detail-item">
+
+                <span>
+                    Expires
+                </span>
+
+                <strong id="successExpiry">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div class="success-detail-item">
+
+                <span>
+                    Download Type
+                </span>
+
+                <strong id="successDownloadType">
+                    Until expiry
+                </strong>
+
+            </div>
+
+
+            <div class="success-detail-item">
+
+                <span>
+                    Status
+                </span>
+
+                <strong class="active-file-status">
+                    Active
+                </strong>
+
+            </div>
+
+        </div>
+
+        <!-- ===== SUCCESS DETAILS GRID END ===== -->
+
+
+        <!-- ===== SUCCESS WARNING START ===== -->
+
+        <div class="success-warning">
+
+            <span>
+                🔐
+            </span>
+
+            <p>
+
+                QuickVault does not permanently store your access
+                code. Save it before closing this window.
+
+            </p>
+
+        </div>
+
+        <!-- ===== SUCCESS WARNING END ===== -->
+
+
+        <!-- ===== SUCCESS ACTION BUTTONS START ===== -->
+
+        <div class="success-action-buttons">
+
+            <button
+                type="button"
+                class="download-now-button"
+                id="downloadNowButton"
+            >
+                Download File
+            </button>
+
+            <button
+                type="button"
+                class="upload-another-button"
+                id="uploadAnotherButton"
+            >
+                Upload Another
+            </button>
+
+        </div>
+
+        <!-- ===== SUCCESS ACTION BUTTONS END ===== -->
+
+    </div>
+
+</div>
+
+<!-- ====================================================== -->
+<!-- ===== UPLOAD SUCCESS MODAL END ===== -->
+<!-- ====================================================== -->
+
+    <!-- ====================================================== -->
+    <!-- ===== DOWNLOAD MODAL START ===== -->
+    <!-- ====================================================== -->
+
+    <div class="modal-overlay" id="downloadModal">
+
+        <div class="download-modal">
+
+            <button
+                type="button"
+                class="modal-close-button"
+                id="closeDownloadButton"
+            >
+                ×
+            </button>
+
+            <div class="modal-lock-icon">
+                🔐
+            </div>
+
+            <h2>
+                Access your file
+            </h2>
+
+            <p>
+
+                Enter the access code and PIN generated during upload.
+
+            </p>
+
+
+            <form id="downloadForm">
+
+                <div class="modal-form-group">
+
+                    <label for="accessCode">
+                        Access Code
+                    </label>
+
+                    <input
+                        type="text"
+                        id="accessCode"
+                        maxlength="6"
+                        placeholder="Enter 6-digit code"
+                    >
+
+                </div>
+
+
+                <div class="modal-form-group">
+
+                    <label for="downloadPin">
+                        PIN
+                    </label>
+
+                    <input
+                        type="password"
+                        id="downloadPin"
+                        maxlength="4"
+                        placeholder="Enter PIN"
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="access-file-button"
+                >
+                    Access File
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- ===== DOWNLOAD MODAL END ===== -->
+    <!-- ====================================================== -->
+
+<!-- ====================================================== -->
+<!-- ===== PROFESSIONAL TOAST NOTIFICATION START ===== -->
+<!-- ====================================================== -->
+
+<div
+    class="toast-notification"
+    id="toastNotification"
+    role="alert"
+>
+
+    <div
+        class="toast-icon"
+        id="toastIcon"
+    >
+        ✓
+    </div>
+
+    <div class="toast-content">
+
+        <strong id="toastTitle">
+            Success
+        </strong>
+
+        <p id="toastMessage">
+            Operation completed successfully.
+        </p>
+
+    </div>
+
+    <button
+        type="button"
+        class="toast-close-button"
+        id="toastCloseButton"
+    >
+        ×
+    </button>
+
+</div>
+
+<!-- ====================================================== -->
+<!-- ===== PROFESSIONAL TOAST NOTIFICATION END ===== -->
+<!-- ====================================================== -->
+
+
+<!-- ====================================================== -->
+<!-- ===== FILE READY MODAL START ===== -->
+<!-- ====================================================== -->
+
+<div
+    class="file-ready-overlay"
+    id="fileReadyModal"
+>
+
+    <div class="file-ready-card">
+
+        <!-- ===== FILE READY CLOSE START ===== -->
+
+        <button
+            type="button"
+            class="file-ready-close"
+            id="fileReadyCloseButton"
+        >
+            ×
+        </button>
+
+        <!-- ===== FILE READY CLOSE END ===== -->
+
+
+        <!-- ===== FILE READY ICON START ===== -->
+
+        <div class="file-ready-icon">
+            ↓
+        </div>
+
+        <!-- ===== FILE READY ICON END ===== -->
+
+
+        <!-- ===== FILE READY HEADING START ===== -->
+
+        <span class="file-ready-label">
+            FILE VERIFIED
+        </span>
+
+        <h2>
+            Your file is ready
+        </h2>
+
+        <p class="file-ready-description">
+
+            QuickVault successfully verified your access
+            code and PIN.
+
+        </p>
+
+        <!-- ===== FILE READY HEADING END ===== -->
+
+
+        <!-- ===== FILE READY INFORMATION START ===== -->
+
+        <div class="file-ready-info">
+
+            <div class="file-ready-document-icon">
+                📄
+            </div>
+
+            <div class="file-ready-document-details">
+
+                <strong id="readyFileName">
+                    document.pdf
+                </strong>
+
+                <span id="readyFileSize">
+                    0 KB
+                </span>
+
+            </div>
+
+        </div>
+
+        <!-- ===== FILE READY INFORMATION END ===== -->
+
+
+        <!-- ===== FILE READY DETAILS START ===== -->
+
+        <div class="file-ready-details-grid">
+
+            <div>
+
+                <span>
+                    File expires
+                </span>
+
+                <strong id="readyFileExpiry">
+                    -
+                </strong>
+
+            </div>
+
+            <div>
+
+                <span>
+                    Download type
+                </span>
+
+                <strong id="readyDownloadType">
+                    Until expiry
+                </strong>
+
+            </div>
+
+        </div>
+
+        <!-- ===== FILE READY DETAILS END ===== -->
+
+
+        <!-- ===== FILE READY WARNING START ===== -->
+
+        <div
+            class="file-ready-warning"
+            id="fileReadyWarning"
+        >
+
+            <span>
+                ⚠
+            </span>
+
+            <p>
+
+                This is a one-time file. It will be deleted
+                immediately after download.
+
+            </p>
+
+        </div>
+
+        <!-- ===== FILE READY WARNING END ===== -->
+
+
+        <!-- ===== FINAL DOWNLOAD BUTTON START ===== -->
+
+        <button
+            type="button"
+            class="final-download-button"
+            id="finalDownloadButton"
+        >
+
+            <span>
+                ↓
+            </span>
+
+            Download File
+
+        </button>
+
+        <!-- ===== FINAL DOWNLOAD BUTTON END ===== -->
+
+    </div>
+
+</div>
+
+<!-- ====================================================== -->
+<!-- ===== FILE READY MODAL END ===== -->
+<!-- ====================================================== -->
+
+    <!-- ===== MAIN JAVASCRIPT START ===== -->
+
+    <script
+        src="{{ url_for('static', filename='js/main.js') }}"
+    ></script>
+
+    <!-- ===== MAIN JAVASCRIPT END ===== -->
+
+</body>
+
+</html>

@@ -1,0 +1,44 @@
+# ==========================================================
+# QUICKVAULT GIT IGNORE
+# File: .gitignore
+# ==========================================================
+
+# ===== PYTHON CACHE START =====
+__pycache__/
+*.py[cod]
+*$py.class
+# ===== PYTHON CACHE END =====
+
+
+# ===== VIRTUAL ENVIRONMENT START =====
+venv/
+.venv/
+env/
+# ===== VIRTUAL ENVIRONMENT END =====
+
+
+# ===== DATABASE START =====
+instance/*.db
+*.sqlite
+*.sqlite3
+# ===== DATABASE END =====
+
+
+# ===== USER UPLOADED FILES START =====
+uploads/*
+!uploads/.gitkeep
+# ===== USER UPLOADED FILES END =====
+
+
+# ===== ENVIRONMENT AND SECRET FILES START =====
+.env
+.env.*
+*.key
+# ===== ENVIRONMENT AND SECRET FILES END =====
+
+
+# ===== VS CODE AND SYSTEM FILES START =====
+.vscode/
+.DS_Store
+Thumbs.db
+# ===== VS CODE AND SYSTEM FILES END =====
