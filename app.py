@@ -18,12 +18,17 @@ from io import BytesIO
 
 import qrcode
 
+from dotenv import load_dotenv
+
 from flask import (
     Flask,
     jsonify,
+    redirect,
     render_template,
     request,
-    send_file
+    send_file,
+    session,
+    url_for
 )
 
 from itsdangerous import (
@@ -42,12 +47,30 @@ from werkzeug.utils import secure_filename
 # ===== 01. IMPORTS END =====
 
 
-# ===== 02. FLASK APP CONFIGURATION START =====
+# ===== 02. ENVIRONMENT VARIABLES START =====
+
+load_dotenv()
+
+ADMIN_USERNAME = os.getenv(
+    "ADMIN_USERNAME",
+    "admin"
+)
+
+ADMIN_PASSWORD = os.getenv(
+    "ADMIN_PASSWORD",
+    ""
+)
+
+# ===== 02. ENVIRONMENT VARIABLES END =====
+
+
+# ===== 03. FLASK APP CONFIGURATION START =====
 
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = (
-    "quickvault-development-secret-key-change-before-deployment"
+app.config["SECRET_KEY"] = os.getenv(
+    "FLASK_SECRET_KEY",
+    "quickvault-development-secret"
 )
 
 BASE_DIR = os.path.abspath(
@@ -75,10 +98,10 @@ download_token_serializer = URLSafeTimedSerializer(
     app.config["SECRET_KEY"]
 )
 
-# ===== 02. FLASK APP CONFIGURATION END =====
+# ===== 03. FLASK APP CONFIGURATION END =====
 
 
-# ===== 03. SECURITY SETTINGS START =====
+# ===== 04. SECURITY SETTINGS START =====
 
 MAX_PIN_ATTEMPTS = 5
 
@@ -88,10 +111,10 @@ CLEANUP_INTERVAL_SECONDS = 60
 
 last_cleanup_timestamp = 0
 
-# ===== 03. SECURITY SETTINGS END =====
+# ===== 04. SECURITY SETTINGS END =====
 
 
-# ===== 04. ALLOWED FILE TYPES START =====
+# ===== 05. ALLOWED FILE TYPES START =====
 
 ALLOWED_EXTENSIONS = {
     "pdf",
@@ -108,10 +131,10 @@ ALLOWED_EXTENSIONS = {
     "zip"
 }
 
-# ===== 04. ALLOWED FILE TYPES END =====
+# ===== 05. ALLOWED FILE TYPES END =====
 
 
-# ===== 05. REQUIRED FOLDERS START =====
+# ===== 06. REQUIRED FOLDERS START =====
 
 os.makedirs(
     app.config["UPLOAD_FOLDER"],
@@ -123,10 +146,10 @@ os.makedirs(
     exist_ok=True
 )
 
-# ===== 05. REQUIRED FOLDERS END =====
+# ===== 06. REQUIRED FOLDERS END =====
 
 
-# ===== 06. DATABASE CONNECTION START =====
+# ===== 07. DATABASE CONNECTION START =====
 
 def get_database_connection():
 
@@ -138,10 +161,10 @@ def get_database_connection():
 
     return connection
 
-# ===== 06. DATABASE CONNECTION END =====
+# ===== 07. DATABASE CONNECTION END =====
 
 
-# ===== 07. DATABASE TABLE CREATION START =====
+# ===== 08. DATABASE TABLE CREATION START =====
 
 def create_database():
 
@@ -189,10 +212,10 @@ def create_database():
 
     connection.close()
 
-# ===== 07. DATABASE TABLE CREATION END =====
+# ===== 08. DATABASE TABLE CREATION END =====
 
 
-# ===== 08. EXISTING DATABASE MIGRATION START =====
+# ===== 09. EXISTING DATABASE MIGRATION START =====
 
 def migrate_database():
 
@@ -232,10 +255,10 @@ def migrate_database():
 
     connection.close()
 
-# ===== 08. EXISTING DATABASE MIGRATION END =====
+# ===== 09. EXISTING DATABASE MIGRATION END =====
 
 
-# ===== 09. FILE VALIDATION START =====
+# ===== 10. FILE VALIDATION START =====
 
 def allowed_file(filename):
 
@@ -246,10 +269,37 @@ def allowed_file(filename):
         in ALLOWED_EXTENSIONS
     )
 
-# ===== 09. FILE VALIDATION END =====
+# ===== 10. FILE VALIDATION END =====
 
 
-# ===== 10. ACCESS CODE GENERATOR START =====
+# ===== 11. FILE SIZE FORMATTER START =====
+
+def format_size(size):
+
+    if size >= 1024 * 1024 * 1024:
+
+        return (
+            f"{size / (1024 * 1024 * 1024):.2f} GB"
+        )
+
+    if size >= 1024 * 1024:
+
+        return (
+            f"{size / (1024 * 1024):.2f} MB"
+        )
+
+    if size >= 1024:
+
+        return (
+            f"{size / 1024:.2f} KB"
+        )
+
+    return f"{size} Bytes"
+
+# ===== 11. FILE SIZE FORMATTER END =====
+
+
+# ===== 12. ACCESS CODE GENERATOR START =====
 
 def generate_access_code():
 
@@ -279,10 +329,10 @@ def generate_access_code():
 
             return access_code
 
-# ===== 10. ACCESS CODE GENERATOR END =====
+# ===== 12. ACCESS CODE GENERATOR END =====
 
 
-# ===== 11. DELETE STORED FILE HELPER START =====
+# ===== 13. DELETE STORED FILE HELPER START =====
 
 def delete_stored_file(stored_filename):
 
@@ -295,10 +345,10 @@ def delete_stored_file(stored_filename):
 
         os.remove(file_path)
 
-# ===== 11. DELETE STORED FILE HELPER END =====
+# ===== 13. DELETE STORED FILE HELPER END =====
 
 
-# ===== 12. FILE EXPIRY CHECK START =====
+# ===== 14. FILE EXPIRY CHECK START =====
 
 def is_file_expired(file_record):
 
@@ -308,10 +358,10 @@ def is_file_expired(file_record):
 
     return datetime.now() >= expires_at
 
-# ===== 12. FILE EXPIRY CHECK END =====
+# ===== 14. FILE EXPIRY CHECK END =====
 
 
-# ===== 13. MARK FILE EXPIRED START =====
+# ===== 15. MARK FILE EXPIRED START =====
 
 def mark_file_expired(file_record):
 
@@ -334,10 +384,10 @@ def mark_file_expired(file_record):
 
     connection.close()
 
-# ===== 13. MARK FILE EXPIRED END =====
+# ===== 15. MARK FILE EXPIRED END =====
 
 
-# ===== 14. MARK FILE MISSING START =====
+# ===== 16. MARK FILE MISSING START =====
 
 def mark_file_missing(file_id):
 
@@ -356,10 +406,10 @@ def mark_file_missing(file_id):
 
     connection.close()
 
-# ===== 14. MARK FILE MISSING END =====
+# ===== 16. MARK FILE MISSING END =====
 
 
-# ===== 15. AUTOMATIC EXPIRED FILE CLEANUP START =====
+# ===== 17. AUTOMATIC EXPIRED FILE CLEANUP START =====
 
 def cleanup_expired_files():
 
@@ -400,10 +450,10 @@ def cleanup_expired_files():
 
     return deleted_count
 
-# ===== 15. AUTOMATIC EXPIRED FILE CLEANUP END =====
+# ===== 17. AUTOMATIC EXPIRED FILE CLEANUP END =====
 
 
-# ===== 16. PERIODIC CLEANUP BEFORE REQUEST START =====
+# ===== 18. PERIODIC CLEANUP BEFORE REQUEST START =====
 
 @app.before_request
 def run_periodic_cleanup():
@@ -430,10 +480,10 @@ def run_periodic_cleanup():
             current_timestamp
         )
 
-# ===== 16. PERIODIC CLEANUP BEFORE REQUEST END =====
+# ===== 18. PERIODIC CLEANUP BEFORE REQUEST END =====
 
 
-# ===== 17. QR CODE GENERATOR START =====
+# ===== 19. QR CODE GENERATOR START =====
 
 def generate_qr_code_data(access_url):
 
@@ -458,10 +508,10 @@ def generate_qr_code_data(access_url):
         encoded_image
     )
 
-# ===== 17. QR CODE GENERATOR END =====
+# ===== 19. QR CODE GENERATOR END =====
 
 
-# ===== 18. PIN LOCK STATUS CHECK START =====
+# ===== 20. PIN LOCK STATUS CHECK START =====
 
 def get_pin_lock_remaining_seconds(file_record):
 
@@ -493,10 +543,10 @@ def get_pin_lock_remaining_seconds(file_record):
 
     return remaining_seconds
 
-# ===== 18. PIN LOCK STATUS CHECK END =====
+# ===== 20. PIN LOCK STATUS CHECK END =====
 
 
-# ===== 19. REGISTER WRONG PIN START =====
+# ===== 21. REGISTER WRONG PIN START =====
 
 def register_wrong_pin(file_record):
 
@@ -542,10 +592,10 @@ def register_wrong_pin(file_record):
 
     return new_attempts
 
-# ===== 19. REGISTER WRONG PIN END =====
+# ===== 21. REGISTER WRONG PIN END =====
 
 
-# ===== 20. RESET PIN SECURITY START =====
+# ===== 22. RESET PIN SECURITY START =====
 
 def reset_pin_security(file_id):
 
@@ -566,10 +616,10 @@ def reset_pin_security(file_id):
 
     connection.close()
 
-# ===== 20. RESET PIN SECURITY END =====
+# ===== 22. RESET PIN SECURITY END =====
 
 
-# ===== 21. HOME ROUTE START =====
+# ===== 23. HOME ROUTE START =====
 
 @app.route("/")
 def home():
@@ -578,10 +628,472 @@ def home():
         "index.html"
     )
 
-# ===== 21. HOME ROUTE END =====
+# ===== 23. HOME ROUTE END =====
 
 
-# ===== 22. FILE UPLOAD ROUTE START =====
+# ============================================================
+# ===== 24. ADMIN LOGIN ROUTE START =====
+# ============================================================
+
+@app.route(
+    "/admin-login",
+    methods=["GET", "POST"]
+)
+def admin_login():
+
+    if session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_dashboard")
+        )
+
+    error = None
+
+    if request.method == "POST":
+
+        username = request.form.get(
+            "username",
+            ""
+        ).strip()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        if (
+            username == ADMIN_USERNAME
+            and
+            password == ADMIN_PASSWORD
+        ):
+
+            session["admin_logged_in"] = True
+
+            return redirect(
+                url_for("admin_dashboard")
+            )
+
+        error = (
+            "Incorrect admin username or password."
+        )
+
+    return render_template(
+        "admin_login.html",
+        error=error
+    )
+
+# ============================================================
+# ===== 24. ADMIN LOGIN ROUTE END =====
+# ============================================================
+
+
+# ============================================================
+# ===== 25. ADMIN DASHBOARD ROUTE START =====
+# ============================================================
+
+@app.route("/admin")
+def admin_dashboard():
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+    # ===== SEARCH AND STATUS FILTER START =====
+
+    search_query = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    status_filter = request.args.get(
+        "status",
+        "all"
+    ).strip().lower()
+
+    allowed_status_filters = {
+        "all",
+        "active",
+        "expired",
+        "downloaded",
+        "missing"
+    }
+
+    if status_filter not in allowed_status_filters:
+
+        status_filter = "all"
+
+    # ===== SEARCH AND STATUS FILTER END =====
+
+    connection = get_database_connection()
+
+    # ===== FILE QUERY START =====
+
+    query_conditions = []
+
+    query_values = []
+
+    if search_query:
+
+        query_conditions.append(
+            """
+            (
+                original_filename LIKE ?
+                OR
+                access_code LIKE ?
+            )
+            """
+        )
+
+        query_values.extend(
+            [
+                f"%{search_query}%",
+                f"%{search_query}%"
+            ]
+        )
+
+    if status_filter != "all":
+
+        query_conditions.append(
+            "status = ?"
+        )
+
+        query_values.append(
+            status_filter
+        )
+
+    file_query = """
+        SELECT *
+        FROM files
+    """
+
+    if query_conditions:
+
+        file_query += (
+            " WHERE "
+            +
+            " AND ".join(
+                query_conditions
+            )
+        )
+
+    file_query += " ORDER BY id DESC"
+
+    files = connection.execute(
+        file_query,
+        tuple(query_values)
+    ).fetchall()
+
+    # ===== FILE QUERY END =====
+
+    # ===== TOTAL UPLOADS START =====
+
+    total_uploads = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM files
+        """
+    ).fetchone()[0]
+
+    # ===== TOTAL UPLOADS END =====
+
+    # ===== ACTIVE FILES START =====
+
+    active_files = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM files
+        WHERE status = 'active'
+        """
+    ).fetchone()[0]
+
+    # ===== ACTIVE FILES END =====
+
+    # ===== EXPIRED FILES START =====
+
+    expired_files = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM files
+        WHERE status = 'expired'
+        """
+    ).fetchone()[0]
+
+    # ===== EXPIRED FILES END =====
+
+    # ===== TOTAL DOWNLOADS START =====
+
+    total_downloads = connection.execute(
+        """
+        SELECT
+        COALESCE(
+            SUM(download_count),
+            0
+        )
+        FROM files
+        """
+    ).fetchone()[0]
+
+    # ===== TOTAL DOWNLOADS END =====
+
+    # ===== TOTAL STORAGE START =====
+
+    total_storage = connection.execute(
+        """
+        SELECT
+        COALESCE(
+            SUM(file_size),
+            0
+        )
+        FROM files
+        """
+    ).fetchone()[0]
+
+    # ===== TOTAL STORAGE END =====
+
+    # ===== ACTIVE STORAGE START =====
+
+    active_storage = connection.execute(
+        """
+        SELECT
+        COALESCE(
+            SUM(file_size),
+            0
+        )
+        FROM files
+        WHERE status = 'active'
+        """
+    ).fetchone()[0]
+
+    # ===== ACTIVE STORAGE END =====
+
+    connection.close()
+
+    # ===== STORAGE PERCENTAGE START =====
+
+    storage_limit = (
+        500 * 1024 * 1024
+    )
+
+    storage_percentage = round(
+        (
+            total_storage
+            /
+            storage_limit
+        )
+        *
+        100,
+        1
+    )
+
+    if storage_percentage > 100:
+
+        storage_percentage = 100
+
+    # ===== STORAGE PERCENTAGE END =====
+
+    # ===== FILE FORMAT LOOP START =====
+
+    formatted_files = []
+
+    for file_record in files:
+
+        formatted_file = dict(
+            file_record
+        )
+
+        formatted_file[
+            "formatted_size"
+        ] = format_size(
+            file_record["file_size"]
+        )
+
+        try:
+
+            formatted_file[
+                "formatted_expiry"
+            ] = datetime.fromisoformat(
+                file_record["expires_at"]
+            ).strftime(
+                "%d %b %Y %I:%M %p"
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            formatted_file[
+                "formatted_expiry"
+            ] = "Unknown"
+
+        formatted_files.append(
+            formatted_file
+        )
+
+    # ===== FILE FORMAT LOOP END =====
+
+    return render_template(
+
+        "admin_dashboard.html",
+
+        total_uploads=total_uploads,
+
+        active_files=active_files,
+
+        expired_files=expired_files,
+
+        total_downloads=total_downloads,
+
+        storage_used=format_size(
+            total_storage
+        ),
+
+        active_storage=format_size(
+            active_storage
+        ),
+
+        storage_percentage=storage_percentage,
+
+        files=formatted_files,
+
+        search_query=search_query,
+
+        status_filter=status_filter,
+
+        message=request.args.get(
+            "message"
+        )
+
+    )
+
+# ============================================================
+# ===== 25. ADMIN DASHBOARD ROUTE END =====
+# ============================================================
+
+
+# ============================================================
+# ===== 26. ADMIN CLEANUP FILES ROUTE START =====
+# ============================================================
+
+@app.route(
+    "/admin/cleanup-files",
+    methods=["POST"]
+)
+def admin_cleanup_files():
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+    deleted_count = cleanup_expired_files()
+
+    return redirect(
+        url_for(
+            "admin_dashboard",
+            message=(
+                f"{deleted_count} expired file(s) cleaned."
+            )
+        )
+    )
+
+# ============================================================
+# ===== 26. ADMIN CLEANUP FILES ROUTE END =====
+# ============================================================
+
+
+# ============================================================
+# ===== 27. ADMIN DELETE FILE ROUTE START =====
+# ============================================================
+
+@app.route(
+    "/admin/delete-file/<int:file_id>",
+    methods=["POST"]
+)
+def admin_delete_file(file_id):
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+    connection = get_database_connection()
+
+    file_record = connection.execute(
+        """
+        SELECT *
+        FROM files
+        WHERE id = ?
+        """,
+        (file_id,)
+    ).fetchone()
+
+    if file_record is None:
+
+        connection.close()
+
+        return redirect(
+            url_for(
+                "admin_dashboard",
+                message=(
+                    "File record not found."
+                )
+            )
+        )
+
+    delete_stored_file(
+        file_record["stored_filename"]
+    )
+
+    connection.execute(
+        """
+        DELETE FROM files
+        WHERE id = ?
+        """,
+        (file_id,)
+    )
+
+    connection.commit()
+
+    connection.close()
+
+    return redirect(
+        url_for(
+            "admin_dashboard",
+            message=(
+                "File deleted successfully."
+            )
+        )
+    )
+
+# ============================================================
+# ===== 27. ADMIN DELETE FILE ROUTE END =====
+# ============================================================
+
+
+# ============================================================
+# ===== 28. ADMIN LOGOUT ROUTE START =====
+# ============================================================
+
+@app.route("/admin-logout")
+def admin_logout():
+
+    session.clear()
+
+    return redirect(
+        url_for("admin_login")
+    )
+
+# ============================================================
+# ===== 28. ADMIN LOGOUT ROUTE END =====
+# ============================================================
+
+
+# ===== 29. FILE UPLOAD ROUTE START =====
 
 @app.route(
     "/upload",
@@ -594,7 +1106,9 @@ def upload_file():
         return jsonify(
             {
                 "success": False,
-                "message": "Please select a file."
+                "message": (
+                    "Please select a file."
+                )
             }
         ), 400
 
@@ -605,7 +1119,9 @@ def upload_file():
         return jsonify(
             {
                 "success": False,
-                "message": "Please select a file."
+                "message": (
+                    "Please select a file."
+                )
             }
         ), 400
 
@@ -807,7 +1323,9 @@ def upload_file():
 
             "access_code": access_code,
 
-            "pin_required": bool(file_pin),
+            "pin_required": bool(
+                file_pin
+            ),
 
             "filename": original_filename,
 
@@ -833,10 +1351,10 @@ def upload_file():
         }
     )
 
-# ===== 22. FILE UPLOAD ROUTE END =====
+# ===== 29. FILE UPLOAD ROUTE END =====
 
 
-# ===== 23. ACCESS FILE VERIFICATION ROUTE START =====
+# ===== 30. ACCESS FILE VERIFICATION ROUTE START =====
 
 @app.route(
     "/access-file",
@@ -915,7 +1433,9 @@ def access_file():
             }
         ), 410
 
-    if is_file_expired(file_record):
+    if is_file_expired(
+        file_record
+    ):
 
         mark_file_expired(
             file_record
@@ -1083,10 +1603,10 @@ def access_file():
         }
     )
 
-# ===== 23. ACCESS FILE VERIFICATION ROUTE END =====
+# ===== 30. ACCESS FILE VERIFICATION ROUTE END =====
 
 
-# ===== 24. ACTUAL FILE DOWNLOAD ROUTE START =====
+# ===== 31. ACTUAL FILE DOWNLOAD ROUTE START =====
 
 @app.route(
     "/download/<access_code>",
@@ -1168,7 +1688,9 @@ def download_file(access_code):
             410
         )
 
-    if is_file_expired(file_record):
+    if is_file_expired(
+        file_record
+    ):
 
         mark_file_expired(
             file_record
@@ -1241,7 +1763,9 @@ def download_file(access_code):
     connection.close()
 
     return send_file(
-        BytesIO(file_data),
+        BytesIO(
+            file_data
+        ),
 
         as_attachment=True,
 
@@ -1249,13 +1773,15 @@ def download_file(access_code):
             "original_filename"
         ],
 
-        mimetype="application/octet-stream"
+        mimetype=(
+            "application/octet-stream"
+        )
     )
 
-# ===== 24. ACTUAL FILE DOWNLOAD ROUTE END =====
+# ===== 31. ACTUAL FILE DOWNLOAD ROUTE END =====
 
 
-# ===== 25. MANUAL CLEANUP ROUTE START =====
+# ===== 32. MANUAL CLEANUP ROUTE START =====
 
 @app.route(
     "/cleanup-expired-files",
@@ -1278,10 +1804,10 @@ def manual_cleanup_expired_files():
         }
     )
 
-# ===== 25. MANUAL CLEANUP ROUTE END =====
+# ===== 32. MANUAL CLEANUP ROUTE END =====
 
 
-# ===== 26. FILE TOO LARGE ERROR START =====
+# ===== 33. FILE TOO LARGE ERROR START =====
 
 @app.errorhandler(413)
 def file_too_large(error):
@@ -1296,10 +1822,10 @@ def file_too_large(error):
         }
     ), 413
 
-# ===== 26. FILE TOO LARGE ERROR END =====
+# ===== 33. FILE TOO LARGE ERROR END =====
 
 
-# ===== 27. APPLICATION START =====
+# ===== 34. APPLICATION START =====
 
 if __name__ == "__main__":
 
@@ -1309,6 +1835,8 @@ if __name__ == "__main__":
 
     cleanup_expired_files()
 
-    app.run(debug=True)
+    app.run(
+        debug=True
+    )
 
-# ===== 27. APPLICATION END =====
+# ===== 34. APPLICATION END =====

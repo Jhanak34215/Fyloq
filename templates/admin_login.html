@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- ===== ADMIN LOGIN META START ===== -->
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>QuickVault Admin Login</title>
+
+    <!-- ===== ADMIN LOGIN META END ===== -->
+
+
+    <!-- ===== ADMIN LOGIN CSS START ===== -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin.css') }}"
+    >
+
+    <!-- ===== ADMIN LOGIN CSS END ===== -->
+
+</head>
+
+<body>
+
+    <!-- ===== ADMIN LOGIN PAGE START ===== -->
+
+    <main class="admin-login-page">
+
+        <section class="admin-login-card">
+
+            <!-- ===== ADMIN BRAND START ===== -->
+
+            <a href="/" class="admin-brand">
+
+                <span class="admin-brand-icon">
+                    🔒
+                </span>
+
+                <span>
+                    QuickVault
+                </span>
+
+            </a>
+
+            <!-- ===== ADMIN BRAND END ===== -->
+
+
+            <!-- ===== ADMIN LOGIN HEADING START ===== -->
+
+            <div class="admin-login-heading">
+
+                <span>
+                    SECURE ADMIN AREA
+                </span>
+
+                <h1>
+                    Admin Login
+                </h1>
+
+                <p>
+                    Enter your administrator credentials to continue.
+                </p>
+
+            </div>
+
+            <!-- ===== ADMIN LOGIN HEADING END ===== -->
+
+
+            <!-- ===== ADMIN LOGIN MESSAGE START ===== -->
+
+            {% if error %}
+
+                <div class="admin-error-message">
+
+                    {{ error }}
+
+                </div>
+
+            {% endif %}
+
+            <!-- ===== ADMIN LOGIN MESSAGE END ===== -->
+
+
+            <!-- ===== ADMIN LOGIN FORM START ===== -->
+
+            <form
+                method="POST"
+                action="{{ url_for('admin_login') }}"
+                class="admin-login-form"
+            >
+
+                <div class="admin-form-group">
+
+                    <label for="username">
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter admin username"
+                        required
+                        autocomplete="username"
+                    >
+
+                </div>
+
+
+                <div class="admin-form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter admin password"
+                        required
+                        autocomplete="current-password"
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="admin-login-button"
+                >
+
+                    Login to Dashboard
+
+                </button>
+
+            </form>
+
+            <!-- ===== ADMIN LOGIN FORM END ===== -->
+
+
+            <!-- ===== ADMIN BACK LINK START ===== -->
+
+            <a href="/" class="admin-back-link">
+
+                ← Back to QuickVault
+
+            </a>
+
+            <!-- ===== ADMIN BACK LINK END ===== -->
+
+        </section>
+
+    </main>
+
+    <!-- ===== ADMIN LOGIN PAGE END ===== -->
+
+</body>
+
+</html>

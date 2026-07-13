@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN DASHBOARD META START ===== -->
+    <!-- ====================================================== -->
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>QuickVault Admin Dashboard</title>
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN DASHBOARD META END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN DASHBOARD CSS START ===== -->
+    <!-- ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin.css') }}"
+    >
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN DASHBOARD CSS END ===== -->
+    <!-- ====================================================== -->
+
+</head>
+
+<body class="admin-dashboard-body">
+
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN DASHBOARD LAYOUT START ===== -->
+    <!-- ====================================================== -->
+
+    <div class="admin-dashboard-layout">
+
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN SIDEBAR START ===== -->
+        <!-- ================================================== -->
+
+        <aside class="admin-sidebar">
+
+            <!-- ===== SIDEBAR BRAND START ===== -->
+
+            <a href="/" class="sidebar-brand">
+
+                <span class="sidebar-brand-icon">
+                    🔒
+                </span>
+
+                <div>
+
+                    <strong>
+                        QuickVault
+                    </strong>
+
+                    <small>
+                        Admin Panel
+                    </small>
+
+                </div>
+
+            </a>
+
+            <!-- ===== SIDEBAR BRAND END ===== -->
+
+
+            <!-- ===== SIDEBAR NAVIGATION START ===== -->
+
+            <nav class="sidebar-navigation">
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="sidebar-link active"
+                >
+
+                    <span>
+                        ▦
+                    </span>
+
+                    Dashboard
+
+                </a>
+
+
+                <a
+                    href="#files-section"
+                    class="sidebar-link"
+                >
+
+                    <span>
+                        📁
+                    </span>
+
+                    File Management
+
+                </a>
+
+
+                <a
+                    href="#storage-section"
+                    class="sidebar-link"
+                >
+
+                    <span>
+                        💾
+                    </span>
+
+                    Storage
+
+                </a>
+
+
+                <a
+                    href="#quick-actions"
+                    class="sidebar-link"
+                >
+
+                    <span>
+                        ⚡
+                    </span>
+
+                    Quick Actions
+
+                </a>
+
+            </nav>
+
+            <!-- ===== SIDEBAR NAVIGATION END ===== -->
+
+
+            <!-- ===== SIDEBAR FOOTER START ===== -->
+
+            <div class="sidebar-footer">
+
+                <a
+                    href="/"
+                    class="sidebar-secondary-link"
+                >
+
+                    <span>
+                        ←
+                    </span>
+
+                    View Website
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_logout') }}"
+                    class="sidebar-logout-link"
+                >
+
+                    <span>
+                        ⇥
+                    </span>
+
+                    Logout
+
+                </a>
+
+            </div>
+
+            <!-- ===== SIDEBAR FOOTER END ===== -->
+
+        </aside>
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN SIDEBAR END ===== -->
+        <!-- ================================================== -->
+
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN MAIN CONTENT START ===== -->
+        <!-- ================================================== -->
+
+        <main class="admin-main-content">
+
+
+            <!-- ================================================== -->
+            <!-- ===== ADMIN TOPBAR START ===== -->
+            <!-- ================================================== -->
+
+            <header class="admin-topbar">
+
+                <div>
+
+                    <span class="admin-page-label">
+                        OVERVIEW
+                    </span>
+
+                    <h1>
+                        Admin Dashboard
+                    </h1>
+
+                    <p>
+                        Monitor QuickVault files, downloads and storage.
+                    </p>
+
+                </div>
+
+
+                <div class="admin-topbar-actions">
+
+                    <button
+                        type="button"
+                        class="admin-refresh-button"
+                        onclick="window.location.reload()"
+                    >
+                        ↻ Refresh
+                    </button>
+
+
+                    <a
+                        href="{{ url_for('admin_logout') }}"
+                        class="admin-topbar-logout"
+                    >
+                        Logout
+                    </a>
+
+                </div>
+
+            </header>
+
+            <!-- ================================================== -->
+            <!-- ===== ADMIN TOPBAR END ===== -->
+            <!-- ================================================== -->
+
+
+            <!-- ================================================== -->
+            <!-- ===== STATISTICS CARDS START ===== -->
+            <!-- ================================================== -->
+
+            <section class="admin-statistics-grid">
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-purple">
+                        ⇧
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Total Uploads
+                        </span>
+
+                        <strong>
+                            {{ total_uploads }}
+                        </strong>
+
+                        <small>
+                            All uploaded files
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-green">
+                        ✓
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Active Files
+                        </span>
+
+                        <strong>
+                            {{ active_files }}
+                        </strong>
+
+                        <small>
+                            Available for download
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-orange">
+                        ⏱
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Expired Files
+                        </span>
+
+                        <strong>
+                            {{ expired_files }}
+                        </strong>
+
+                        <small>
+                            Automatically removed
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-blue">
+                        ↓
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Total Downloads
+                        </span>
+
+                        <strong>
+                            {{ total_downloads }}
+                        </strong>
+
+                        <small>
+                            Successful downloads
+                        </small>
+
+                    </div>
+
+                </article>
+
+            </section>
+
+            <!-- ================================================== -->
+            <!-- ===== STATISTICS CARDS END ===== -->
+            <!-- ================================================== -->
+
+
+            <!-- ================================================== -->
+            <!-- ===== DASHBOARD MIDDLE GRID START ===== -->
+            <!-- ================================================== -->
+
+            <section class="admin-middle-grid">
+
+
+                <!-- ================================================== -->
+                <!-- ===== STORAGE CARD START ===== -->
+                <!-- ================================================== -->
+
+                <article
+                    class="admin-panel-card"
+                    id="storage-section"
+                >
+
+                    <div class="panel-card-heading">
+
+                        <div>
+
+                            <span>
+                                STORAGE
+                            </span>
+
+                            <h2>
+                                Storage Usage
+                            </h2>
+
+                        </div>
+
+                        <div class="panel-heading-icon">
+                            💾
+                        </div>
+
+                    </div>
+
+
+                    <div class="storage-summary">
+
+                        <strong>
+                            {{ storage_used }}
+                        </strong>
+
+                        <span>
+                            total records storage
+                        </span>
+
+                    </div>
+
+
+                    <div class="storage-progress-track">
+
+                        <div
+                            class="storage-progress-bar"
+                            style="width: {{ storage_percentage }}%;"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="storage-progress-details">
+
+                        <span>
+                            {{ storage_percentage }}% used
+                        </span>
+
+                        <span>
+                            Limit: 500 MB
+                        </span>
+
+                    </div>
+
+
+                    <div class="storage-information-grid">
+
+                        <div>
+
+                            <span>
+                                Active Storage
+                            </span>
+
+                            <strong>
+                                {{ active_storage }}
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Total Records
+                            </span>
+
+                            <strong>
+                                {{ total_uploads }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+                <!-- ================================================== -->
+                <!-- ===== STORAGE CARD END ===== -->
+                <!-- ================================================== -->
+
+
+                <!-- ================================================== -->
+                <!-- ===== QUICK ACTIONS CARD START ===== -->
+                <!-- ================================================== -->
+
+                <article
+                    class="admin-panel-card"
+                    id="quick-actions"
+                >
+
+                    <div class="panel-card-heading">
+
+                        <div>
+
+                            <span>
+                                ACTIONS
+                            </span>
+
+                            <h2>
+                                Quick Actions
+                            </h2>
+
+                        </div>
+
+                        <div class="panel-heading-icon">
+                            ⚡
+                        </div>
+
+                    </div>
+
+
+                    <div class="admin-quick-actions">
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('admin_cleanup_files') }}"
+                        >
+
+                            <button
+                                type="submit"
+                                class="quick-action-button cleanup-button"
+                            >
+
+                                <span>
+                                    🧹
+                                </span>
+
+                                <div>
+
+                                    <strong>
+                                        Cleanup Expired Files
+                                    </strong>
+
+                                    <small>
+                                        Remove expired stored files
+                                    </small>
+
+                                </div>
+
+                            </button>
+
+                        </form>
+
+
+                        <button
+                            type="button"
+                            class="quick-action-button refresh-button"
+                            onclick="window.location.reload()"
+                        >
+
+                            <span>
+                                ↻
+                            </span>
+
+                            <div>
+
+                                <strong>
+                                    Refresh Statistics
+                                </strong>
+
+                                <small>
+                                    Reload dashboard information
+                                </small>
+
+                            </div>
+
+                        </button>
+
+
+                        <a
+                            href="/"
+                            class="quick-action-button website-button"
+                        >
+
+                            <span>
+                                🌐
+                            </span>
+
+                            <div>
+
+                                <strong>
+                                    Open QuickVault
+                                </strong>
+
+                                <small>
+                                    View the public website
+                                </small>
+
+                            </div>
+
+                        </a>
+
+                    </div>
+
+                </article>
+
+                <!-- ================================================== -->
+                <!-- ===== QUICK ACTIONS CARD END ===== -->
+                <!-- ================================================== -->
+
+            </section>
+
+            <!-- ================================================== -->
+            <!-- ===== DASHBOARD MIDDLE GRID END ===== -->
+            <!-- ================================================== -->
+
+
+            <!-- ================================================== -->
+            <!-- ===== FILE MANAGEMENT SECTION START ===== -->
+            <!-- ================================================== -->
+
+            <section
+                class="admin-files-section"
+                id="files-section"
+            >
+
+                <!-- ================================================== -->
+                <!-- ===== FILE TABLE HEADER START ===== -->
+                <!-- ================================================== -->
+
+                <div class="files-section-header">
+
+                    <div>
+
+                        <span class="admin-page-label">
+                            FILE MANAGEMENT
+                        </span>
+
+                        <h2>
+                            Recent Uploaded Files
+                        </h2>
+
+                        <p>
+                            Search, filter and manage QuickVault file records.
+                        </p>
+
+                    </div>
+
+
+                    <!-- ============================================== -->
+                    <!-- ===== ADMIN SEARCH AND FILTER FORM START ===== -->
+                    <!-- ============================================== -->
+
+                    <form
+                        method="GET"
+                        action="{{ url_for('admin_dashboard') }}"
+                        class="admin-search-form"
+                    >
+
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ search_query }}"
+                            placeholder="Search filename or access code"
+                        >
+
+
+                        <select name="status">
+
+                            <option
+                                value="all"
+                                {% if status_filter == "all" %}
+                                    selected
+                                {% endif %}
+                            >
+                                All Status
+                            </option>
+
+                            <option
+                                value="active"
+                                {% if status_filter == "active" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Active
+                            </option>
+
+                            <option
+                                value="expired"
+                                {% if status_filter == "expired" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Expired
+                            </option>
+
+                            <option
+                                value="downloaded"
+                                {% if status_filter == "downloaded" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Downloaded
+                            </option>
+
+                            <option
+                                value="missing"
+                                {% if status_filter == "missing" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Missing
+                            </option>
+
+                        </select>
+
+
+                        <button type="submit">
+                            Search
+                        </button>
+
+
+                        {% if search_query or status_filter != "all" %}
+
+                            <a
+                                href="{{ url_for('admin_dashboard') }}"
+                                class="admin-clear-filter"
+                            >
+                                Clear
+                            </a>
+
+                        {% endif %}
+
+                    </form>
+
+                    <!-- ============================================== -->
+                    <!-- ===== ADMIN SEARCH AND FILTER FORM END ===== -->
+                    <!-- ============================================== -->
+
+                </div>
+
+                <!-- ================================================== -->
+                <!-- ===== FILE TABLE HEADER END ===== -->
+                <!-- ================================================== -->
+
+
+                <!-- ================================================== -->
+                <!-- ===== DASHBOARD MESSAGE START ===== -->
+                <!-- ================================================== -->
+
+                {% if message %}
+
+                    <div class="admin-dashboard-message">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endif %}
+
+                <!-- ================================================== -->
+                <!-- ===== DASHBOARD MESSAGE END ===== -->
+                <!-- ================================================== -->
+
+
+                <!-- ================================================== -->
+                <!-- ===== ACTIVE FILTER INFORMATION START ===== -->
+                <!-- ================================================== -->
+
+                {% if search_query or status_filter != "all" %}
+
+                    <div class="admin-dashboard-message">
+
+                        Showing filtered results
+
+                        {% if search_query %}
+
+                            for
+                            <strong>
+                                “{{ search_query }}”
+                            </strong>
+
+                        {% endif %}
+
+                        {% if status_filter != "all" %}
+
+                            with status
+                            <strong>
+                                {{ status_filter|capitalize }}
+                            </strong>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+                <!-- ================================================== -->
+                <!-- ===== ACTIVE FILTER INFORMATION END ===== -->
+                <!-- ================================================== -->
+
+
+                <!-- ================================================== -->
+                <!-- ===== FILE TABLE START ===== -->
+                <!-- ================================================== -->
+
+                <div class="admin-table-wrapper">
+
+                    <table class="admin-files-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    File
+                                </th>
+
+                                <th>
+                                    Access Code
+                                </th>
+
+                                <th>
+                                    Size
+                                </th>
+
+                                <th>
+                                    Expiry
+                                </th>
+
+                                <th>
+                                    Downloads
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for file in files %}
+
+                                <tr>
+
+                                    <!-- ===== FILE NAME CELL START ===== -->
+
+                                    <td>
+
+                                        <div class="admin-file-name-cell">
+
+                                            <div class="admin-file-icon">
+
+                                                {% if file.file_extension in ["jpg", "jpeg", "png"] %}
+
+                                                    🖼️
+
+                                                {% elif file.file_extension == "pdf" %}
+
+                                                    📕
+
+                                                {% elif file.file_extension in ["doc", "docx", "txt"] %}
+
+                                                    📘
+
+                                                {% elif file.file_extension in ["xls", "xlsx"] %}
+
+                                                    📊
+
+                                                {% elif file.file_extension in ["ppt", "pptx"] %}
+
+                                                    📙
+
+                                                {% elif file.file_extension == "zip" %}
+
+                                                    🗜️
+
+                                                {% else %}
+
+                                                    📄
+
+                                                {% endif %}
+
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    {{ file.original_filename }}
+                                                </strong>
+
+                                                <span>
+                                                    {{ file.file_extension|upper }}
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <!-- ===== FILE NAME CELL END ===== -->
+
+
+                                    <!-- ===== ACCESS CODE CELL START ===== -->
+
+                                    <td>
+
+                                        <code class="admin-access-code">
+                                            {{ file.access_code }}
+                                        </code>
+
+                                    </td>
+
+                                    <!-- ===== ACCESS CODE CELL END ===== -->
+
+
+                                    <!-- ===== FILE SIZE CELL START ===== -->
+
+                                    <td>
+                                        {{ file.formatted_size }}
+                                    </td>
+
+                                    <!-- ===== FILE SIZE CELL END ===== -->
+
+
+                                    <!-- ===== EXPIRY CELL START ===== -->
+
+                                    <td>
+
+                                        <span class="admin-expiry-text">
+                                            {{ file.formatted_expiry }}
+                                        </span>
+
+                                    </td>
+
+                                    <!-- ===== EXPIRY CELL END ===== -->
+
+
+                                    <!-- ===== DOWNLOAD COUNT CELL START ===== -->
+
+                                    <td>
+                                        {{ file.download_count }}
+                                    </td>
+
+                                    <!-- ===== DOWNLOAD COUNT CELL END ===== -->
+
+
+                                    <!-- ===== STATUS CELL START ===== -->
+
+                                    <td>
+
+                                        <span
+                                            class="
+                                                admin-status-badge
+                                                status-{{ file.status }}
+                                            "
+                                        >
+                                            {{ file.status }}
+                                        </span>
+
+                                    </td>
+
+                                    <!-- ===== STATUS CELL END ===== -->
+
+
+                                    <!-- ===== DELETE ACTION CELL START ===== -->
+
+                                    <td>
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for('admin_delete_file', file_id=file.id) }}"
+                                            onsubmit="return confirm('Delete this file permanently?');"
+                                        >
+
+                                            <button
+                                                type="submit"
+                                                class="admin-delete-button"
+                                            >
+                                                Delete
+                                            </button>
+
+                                        </form>
+
+                                    </td>
+
+                                    <!-- ===== DELETE ACTION CELL END ===== -->
+
+                                </tr>
+
+                            {% else %}
+
+                                <tr>
+
+                                    <td
+                                        colspan="7"
+                                        class="admin-empty-state"
+                                    >
+
+                                        <div>
+                                            📂
+                                        </div>
+
+                                        <strong>
+                                            No file records found
+                                        </strong>
+
+                                        <p>
+
+                                            {% if search_query or status_filter != "all" %}
+
+                                                No files match the selected search or status filter.
+
+                                            {% else %}
+
+                                                Uploaded files will appear here.
+
+                                            {% endif %}
+
+                                        </p>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- ================================================== -->
+                <!-- ===== FILE TABLE END ===== -->
+                <!-- ================================================== -->
+
+            </section>
+
+            <!-- ================================================== -->
+            <!-- ===== FILE MANAGEMENT SECTION END ===== -->
+            <!-- ================================================== -->
+
+
+            <!-- ================================================== -->
+            <!-- ===== ADMIN FOOTER START ===== -->
+            <!-- ================================================== -->
+
+            <footer class="admin-dashboard-footer">
+
+                <p>
+                    QuickVault Admin Dashboard
+                </p>
+
+                <span>
+                    Developed by Jhanak Uprade
+                </span>
+
+            </footer>
+
+            <!-- ================================================== -->
+            <!-- ===== ADMIN FOOTER END ===== -->
+            <!-- ================================================== -->
+
+        </main>
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN MAIN CONTENT END ===== -->
+        <!-- ================================================== -->
+
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN DASHBOARD LAYOUT END ===== -->
+    <!-- ====================================================== -->
+
+</body>
+
+</html>
