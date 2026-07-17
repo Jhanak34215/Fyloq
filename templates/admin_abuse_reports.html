@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN ABUSE REPORTS META START ===== -->
+    <!-- ====================================================== -->
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Abuse Reports | QuickVault Admin</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin.css') }}"
+    >
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN ABUSE REPORTS META END ===== -->
+    <!-- ====================================================== -->
+
+</head>
+
+<body class="admin-dashboard-body">
+
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN ABUSE REPORTS LAYOUT START ===== -->
+    <!-- ====================================================== -->
+
+    <div class="admin-dashboard-layout">
+
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN SIDEBAR START ===== -->
+        <!-- ================================================== -->
+
+        <aside class="admin-sidebar">
+
+            <a href="/" class="sidebar-brand">
+
+                <span class="sidebar-brand-icon">
+                    🔒
+                </span>
+
+                <div>
+
+                    <strong>
+                        QuickVault
+                    </strong>
+
+                    <small>
+                        Admin Panel
+                    </small>
+
+                </div>
+
+            </a>
+
+
+            <nav class="sidebar-navigation">
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="sidebar-link"
+                >
+
+                    <span>
+                        ▦
+                    </span>
+
+                    Dashboard
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}#files-section"
+                    class="sidebar-link"
+                >
+
+                    <span>
+                        📁
+                    </span>
+
+                    File Management
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_support_requests') }}"
+                    class="sidebar-link"
+                >
+
+                    <span>
+                        🎧
+                    </span>
+
+                    Support Requests
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_abuse_reports') }}"
+                    class="sidebar-link active"
+                >
+
+                    <span>
+                        ⚠
+                    </span>
+
+                    Abuse Reports
+
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar-footer">
+
+                <a
+                    href="/report-abuse"
+                    class="sidebar-secondary-link"
+                >
+
+                    <span>
+                        ⚠
+                    </span>
+
+                    View Report Page
+
+                </a>
+
+
+                <a
+                    href="/"
+                    class="sidebar-secondary-link"
+                >
+
+                    <span>
+                        ←
+                    </span>
+
+                    View Website
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_logout') }}"
+                    class="sidebar-logout-link"
+                >
+
+                    <span>
+                        ⇥
+                    </span>
+
+                    Logout
+
+                </a>
+
+            </div>
+
+        </aside>
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN SIDEBAR END ===== -->
+        <!-- ================================================== -->
+
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN MAIN CONTENT START ===== -->
+        <!-- ================================================== -->
+
+        <main class="admin-main-content">
+
+
+            <!-- ===== TOPBAR START ===== -->
+
+            <header class="admin-topbar">
+
+                <div>
+
+                    <span class="admin-page-label">
+                        SAFETY MANAGEMENT
+                    </span>
+
+                    <h1>
+                        Abuse Reports
+                    </h1>
+
+                    <p>
+                        Review complaints about suspicious, harmful or illegal files.
+                    </p>
+
+                </div>
+
+
+                <div class="admin-topbar-actions">
+
+                    <button
+                        type="button"
+                        class="admin-refresh-button"
+                        onclick="window.location.reload()"
+                    >
+                        ↻ Refresh
+                    </button>
+
+
+                    <a
+                        href="{{ url_for('admin_dashboard') }}"
+                        class="admin-topbar-logout"
+                    >
+                        Dashboard
+                    </a>
+
+                </div>
+
+            </header>
+
+            <!-- ===== TOPBAR END ===== -->
+
+
+            <!-- ================================================== -->
+            <!-- ===== STATISTICS START ===== -->
+            <!-- ================================================== -->
+
+            <section class="admin-statistics-grid">
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-purple">
+                        ⚠
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Total Reports
+                        </span>
+
+                        <strong>
+                            {{ total_reports }}
+                        </strong>
+
+                        <small>
+                            All complaints
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-orange">
+                        ⏱
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Pending
+                        </span>
+
+                        <strong>
+                            {{ pending_reports }}
+                        </strong>
+
+                        <small>
+                            Waiting for review
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-blue">
+                        🔍
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Investigating
+                        </span>
+
+                        <strong>
+                            {{ investigating_reports }}
+                        </strong>
+
+                        <small>
+                            Under investigation
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-green">
+                        ✓
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Resolved
+                        </span>
+
+                        <strong>
+                            {{ resolved_reports }}
+                        </strong>
+
+                        <small>
+                            Completed reports
+                        </small>
+
+                    </div>
+
+                </article>
+
+            </section>
+
+            <!-- ================================================== -->
+            <!-- ===== STATISTICS END ===== -->
+            <!-- ================================================== -->
+
+
+            <!-- ================================================== -->
+            <!-- ===== REPORT MANAGEMENT START ===== -->
+            <!-- ================================================== -->
+
+            <section class="admin-files-section">
+
+                <div class="files-section-header">
+
+                    <div>
+
+                        <span class="admin-page-label">
+                            COMPLAINT MANAGEMENT
+                        </span>
+
+                        <h2>
+                            Submitted Abuse Reports
+                        </h2>
+
+                        <p>
+                            Search complaints and update their status.
+                        </p>
+
+                    </div>
+
+
+                    <form
+                        method="GET"
+                        action="{{ url_for('admin_abuse_reports') }}"
+                        class="admin-search-form"
+                    >
+
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ search_query }}"
+                            placeholder="Search name, email, code or subject"
+                        >
+
+
+                        <select name="status">
+
+                            <option
+                                value="all"
+                                {% if status_filter == "all" %}
+                                    selected
+                                {% endif %}
+                            >
+                                All Status
+                            </option>
+
+                            <option
+                                value="pending"
+                                {% if status_filter == "pending" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Pending
+                            </option>
+
+                            <option
+                                value="investigating"
+                                {% if status_filter == "investigating" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Investigating
+                            </option>
+
+                            <option
+                                value="resolved"
+                                {% if status_filter == "resolved" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Resolved
+                            </option>
+
+                            <option
+                                value="closed"
+                                {% if status_filter == "closed" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Closed
+                            </option>
+
+                        </select>
+
+
+                        <button type="submit">
+                            Search
+                        </button>
+
+
+                        {% if search_query or status_filter != "all" %}
+
+                            <a
+                                href="{{ url_for('admin_abuse_reports') }}"
+                                class="admin-clear-filter"
+                            >
+                                Clear
+                            </a>
+
+                        {% endif %}
+
+                    </form>
+
+                </div>
+
+
+                {% if message %}
+
+                    <div class="admin-dashboard-message">
+                        {{ message }}
+                    </div>
+
+                {% endif %}
+
+
+                <div class="admin-support-list">
+
+                    {% for report in reports %}
+
+                        <article class="admin-support-card">
+
+                            <div class="admin-support-card-header">
+
+                                <div>
+
+                                    <span class="admin-support-ticket">
+                                        QV-AB-{{ "%06d"|format(report.id) }}
+                                    </span>
+
+                                    <h3>
+                                        {{ report.subject }}
+                                    </h3>
+
+                                </div>
+
+
+                                <span
+                                    class="
+                                        admin-status-badge
+                                        abuse-status-{{ report.status|lower }}
+                                    "
+                                >
+                                    {{ report.status }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="admin-support-user-grid">
+
+                                <div>
+
+                                    <span>
+                                        Name
+                                    </span>
+
+                                    <strong>
+                                        {{ report.full_name }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Email
+                                    </span>
+
+                                    <a href="mailto:{{ report.email }}">
+                                        {{ report.email }}
+                                    </a>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Access Code
+                                    </span>
+
+                                    <strong>
+
+                                        {% if report.access_code %}
+
+                                            {{ report.access_code }}
+
+                                        {% else %}
+
+                                            Not provided
+
+                                        {% endif %}
+
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Complaint Type
+                                    </span>
+
+                                    <strong>
+                                        {{ report.formatted_complaint_type }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Submitted
+                                    </span>
+
+                                    <strong>
+                                        {{ report.formatted_created_at }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="admin-support-message-box">
+
+                                <span>
+                                    COMPLAINT DESCRIPTION
+                                </span>
+
+                                <p>
+                                    {{ report.description }}
+                                </p>
+
+                            </div>
+
+
+                            <div class="admin-support-actions">
+
+                                <a
+                                    href="mailto:{{ report.email }}?subject=Re:%20QV-AB-{{ '%06d'|format(report.id) }}%20-%20{{ report.subject }}"
+                                    class="admin-support-email-button"
+                                >
+                                    ✉ Reply by Email
+                                </a>
+
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for('admin_update_abuse_status', report_id=report.id) }}"
+                                    class="admin-support-status-form"
+                                >
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    value="{{ csrf_token() }}"
+                                >
+
+                                    <select name="status">
+
+                                        <option
+                                            value="Pending"
+                                            {% if report.status == "Pending" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Pending
+                                        </option>
+
+                                        <option
+                                            value="Investigating"
+                                            {% if report.status == "Investigating" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Investigating
+                                        </option>
+
+                                        <option
+                                            value="Resolved"
+                                            {% if report.status == "Resolved" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Resolved
+                                        </option>
+
+                                        <option
+                                            value="Closed"
+                                            {% if report.status == "Closed" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Closed
+                                        </option>
+
+                                    </select>
+
+
+                                    <button type="submit">
+                                        Update Status
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </article>
+
+                    {% else %}
+
+                        <div class="admin-support-empty">
+
+                            <div>
+                                🛡️
+                            </div>
+
+                            <strong>
+                                No abuse reports found
+                            </strong>
+
+                            <p>
+
+                                {% if search_query or status_filter != "all" %}
+
+                                    No complaints match the selected filter.
+
+                                {% else %}
+
+                                    User-submitted abuse reports will appear here.
+
+                                {% endif %}
+
+                            </p>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+            <!-- ================================================== -->
+            <!-- ===== REPORT MANAGEMENT END ===== -->
+            <!-- ================================================== -->
+
+
+            <footer class="admin-dashboard-footer">
+
+                <p>
+                    QuickVault Abuse Management
+                </p>
+
+                <span>
+                    quickvault.help@gmail.com
+                </span>
+
+            </footer>
+
+        </main>
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN MAIN CONTENT END ===== -->
+        <!-- ================================================== -->
+
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN ABUSE REPORTS LAYOUT END ===== -->
+    <!-- ====================================================== -->
+
+</body>
+
+</html>

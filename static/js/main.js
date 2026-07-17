@@ -576,33 +576,86 @@ uploadForm.addEventListener(
                 "expiryTime"
             ).value;
 
-        const filePin =
-            document.getElementById(
-                "filePin"
-            ).value.trim();
+        // =========================================================
+// ===== FILE PIN VALIDATION START =====
+// =========================================================
 
-        const oneTimeDownload =
-            document.getElementById(
-                "oneTimeDownload"
-            ).checked;
+const filePin =
+    document.getElementById(
+        "filePin"
+    ).value.trim();
 
-        if (
-            filePin !== ""
-            &&
-            !/^[0-9]{4}$/.test(
-                filePin
-            )
-        ) {
+const oneTimeDownload =
+    document.getElementById(
+        "oneTimeDownload"
+    ).checked;
 
-            showToast(
-                "error",
-                "Invalid PIN",
-                "PIN must contain exactly 4 digits."
-            );
 
-            return;
+/* ===== PIN FORMAT CHECK START ===== */
 
-        }
+if (
+    filePin !== ""
+    &&
+    !/^[0-9]{4}$/.test(
+        filePin
+    )
+) {
+
+    showToast(
+        "error",
+        "Invalid PIN",
+        "PIN must contain exactly 4 digits."
+    );
+
+    return;
+
+}
+
+/* ===== PIN FORMAT CHECK END ===== */
+
+
+/* ===== WEAK PIN CHECK START ===== */
+
+const weakFilePins = new Set(
+    [
+        "0000",
+        "1111",
+        "2222",
+        "3333",
+        "4444",
+        "5555",
+        "6666",
+        "7777",
+        "8888",
+        "9999",
+        "1234",
+        "4321"
+    ]
+);
+
+if (
+    filePin !== ""
+    &&
+    weakFilePins.has(
+        filePin
+    )
+) {
+
+    showToast(
+        "warning",
+        "Weak PIN Detected",
+        "This PIN is easy to guess. Please choose a stronger 4-digit PIN."
+    );
+
+    return;
+
+}
+
+/* ===== WEAK PIN CHECK END ===== */
+
+// =========================================================
+// ===== FILE PIN VALIDATION END =====
+// =========================================================
 
         const formData =
             new FormData();
@@ -860,17 +913,34 @@ uploadForm.addEventListener(
         /* ===== UPLOAD TIMEOUT END ===== */
 
 
-        request.open(
-            "POST",
-            "/upload"
+       request.open(
+    "POST",
+    "/upload"
+);
+
+const csrfToken =
+    document
+        .querySelector(
+            'meta[name="csrf-token"]'
+        )
+        ?.getAttribute(
+            "content"
         );
 
-        request.timeout =
-            120000;
+    if (csrfToken) {
 
-        request.send(
-            formData
+        request.setRequestHeader(
+            "X-CSRFToken",
+            csrfToken
         );
+
+    }
+
+    request.timeout = 120000;
+
+    request.send(
+        formData
+    );
 
     }
 );
@@ -1379,8 +1449,17 @@ downloadForm.addEventListener(
                         method:"POST",
 
                         headers:{
+
                             "Content-Type":
-                                "application/json"
+                                "application/json",
+
+                            "X-CSRFToken":
+                                document
+                                    .querySelector(
+                                        'meta[name="csrf-token"]'
+                                    )
+                                    .content
+
                         },
 
                         body:JSON.stringify(
@@ -1841,4 +1920,60 @@ cancelUploadButton.addEventListener(
 
 /* ========================================================= */
 /* ===== 23. CANCEL ACTIVE UPLOAD END ===== */
+/* ========================================================= */
+
+/* ========================================================= */
+/* ===== PIN SECURITY WARNING START ===== */
+/* ========================================================= */
+
+const filePinInput =
+    document.getElementById(
+        "filePin"
+    );
+
+const pinSecurityWarning =
+    document.getElementById(
+        "pinSecurityWarning"
+    );
+
+function updatePinSecurityWarning() {
+
+    if (
+        !filePinInput
+        ||
+        !pinSecurityWarning
+    ) {
+
+        return;
+
+    }
+
+    const hasPin =
+        filePinInput.value.trim() !== "";
+
+    pinSecurityWarning.hidden =
+        !hasPin;
+}
+
+if (
+    filePinInput
+    &&
+    pinSecurityWarning
+) {
+
+    filePinInput.addEventListener(
+        "input",
+        updatePinSecurityWarning
+    );
+
+    filePinInput.addEventListener(
+        "change",
+        updatePinSecurityWarning
+    );
+
+    updatePinSecurityWarning();
+}
+
+/* ========================================================= */
+/* ===== PIN SECURITY WARNING END ===== */
 /* ========================================================= */

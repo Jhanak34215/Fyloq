@@ -1,5 +1,5 @@
 # ============================================================
-# QUICKVAULT BACKEND
+# FYLOQ BACKEND
 # File: app.py
 # ============================================================
 
@@ -7,17 +7,22 @@
 # ===== 01. IMPORTS START =====
 
 import base64
+import hmac
 import os
-import random
+import secrets
 import sqlite3
 import time
 import uuid
+import zipfile
 
 from datetime import datetime, timedelta
 from io import BytesIO
 
 import qrcode
-
+from flask_wtf.csrf import (
+    CSRFError,
+    CSRFProtect
+)
 from dotenv import load_dotenv
 
 from flask import (
@@ -30,7 +35,9 @@ from flask import (
     session,
     url_for
 )
+from flask_limiter import Limiter
 
+from flask_limiter.util import get_remote_address
 from itsdangerous import (
     BadSignature,
     SignatureExpired,
@@ -51,16 +58,45 @@ from werkzeug.utils import secure_filename
 
 load_dotenv()
 
+# ============================================================
+# ===== ADMIN CREDENTIAL ENVIRONMENT START =====
+# ============================================================
+
 ADMIN_USERNAME = os.getenv(
     "ADMIN_USERNAME",
-    "admin"
-)
+    ""
+).strip()
 
 ADMIN_PASSWORD = os.getenv(
     "ADMIN_PASSWORD",
     ""
 )
 
+ADMIN_PASSWORD_HASH = os.getenv(
+    "ADMIN_PASSWORD_HASH",
+    ""
+).strip()
+
+# ============================================================
+# ===== ADMIN CREDENTIAL ENVIRONMENT END =====
+# ============================================================
+
+# ============================================================
+# ===== APPLICATION ENVIRONMENT START =====
+# ============================================================
+
+APP_ENV = os.getenv(
+    "APP_ENV",
+    "development"
+).strip().lower()
+
+IS_PRODUCTION = (
+    APP_ENV == "production"
+)
+
+# ============================================================
+# ===== APPLICATION ENVIRONMENT END =====
+# ============================================================
 # ===== 02. ENVIRONMENT VARIABLES END =====
 
 
@@ -68,10 +104,99 @@ ADMIN_PASSWORD = os.getenv(
 
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = os.getenv(
-    "FLASK_SECRET_KEY",
-    "quickvault-development-secret"
+
+# ============================================================
+# ===== RATE LIMITER START =====
+# ============================================================
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=[]
 )
+
+# ============================================================
+# ===== RATE LIMITER END =====
+# ============================================================
+
+# ============================================================
+# ===== SECURE FLASK SECRET KEY START =====
+# ============================================================
+
+FLASK_SECRET_KEY = os.getenv(
+    "FLASK_SECRET_KEY",
+    ""
+).strip()
+
+if IS_PRODUCTION and not FLASK_SECRET_KEY:
+
+    raise RuntimeError(
+        "FLASK_SECRET_KEY is required in production."
+    )
+
+if not FLASK_SECRET_KEY:
+
+    FLASK_SECRET_KEY = secrets.token_hex(
+        32
+    )
+
+app.config["SECRET_KEY"] = FLASK_SECRET_KEY
+
+# ============================================================
+# ===== SECURE FLASK SECRET KEY END =====
+# ============================================================
+
+# ============================================================
+# ===== CSRF PROTECTION START =====
+# ============================================================
+
+csrf = CSRFProtect(
+    app
+)
+
+# ============================================================
+# ===== CSRF PROTECTION END =====
+# ============================================================
+# ============================================================
+# ===== ADMIN SESSION SECURITY START =====
+# ============================================================
+
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(
+    minutes=30
+)
+
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+# Local development me False rahega.
+# Deployment ke waqt HTTPS par True karenge.
+app.config["SESSION_COOKIE_SECURE"] = IS_PRODUCTION
+
+# Fyloq ke liye alag session-cookie name.
+app.config["SESSION_COOKIE_NAME"] = (
+    "fyloq_session"
+)
+
+# Har authenticated request par permanent session refresh hogi.
+app.config["SESSION_REFRESH_EACH_REQUEST"] = True
+
+# Current Flask-WTF compatibility ke liye seconds use kiye hain.
+# 7200 seconds = 2 hours.
+app.config["WTF_CSRF_TIME_LIMIT"] = 7200
+
+# Production HTTPS par strict CSRF referrer checking.
+app.config["WTF_CSRF_SSL_STRICT"] = IS_PRODUCTION
+
+app.config["PREFERRED_URL_SCHEME"] = (
+    "https"
+    if IS_PRODUCTION
+    else "http"
+)
+
+# ============================================================
+# ===== ADMIN SESSION SECURITY END =====
+# ============================================================
 
 BASE_DIR = os.path.abspath(
     os.path.dirname(__file__)
@@ -101,16 +226,92 @@ download_token_serializer = URLSafeTimedSerializer(
 # ===== 03. FLASK APP CONFIGURATION END =====
 
 
+
+# ============================================================
+# ===== PRODUCTION CONFIGURATION VALIDATION START =====
+# ============================================================
+
+if IS_PRODUCTION:
+
+    if not ADMIN_USERNAME:
+
+        raise RuntimeError(
+            "ADMIN_USERNAME is required in production."
+        )
+
+    if (
+        not ADMIN_PASSWORD
+        and
+        not ADMIN_PASSWORD_HASH
+    ):
+
+        raise RuntimeError(
+            "ADMIN_PASSWORD or ADMIN_PASSWORD_HASH "
+            "is required in production."
+        )
+
+# ============================================================
+# ===== PRODUCTION CONFIGURATION VALIDATION END =====
+# ============================================================
+
 # ===== 04. SECURITY SETTINGS START =====
 
-MAX_PIN_ATTEMPTS = 5
 
-PIN_LOCK_MINUTES = 10
+# ============================================================
+# ===== FILE PIN SECURITY SETTINGS START =====
+# ============================================================
+
+MAX_PIN_ATTEMPTS = 4
+
+PIN_LOCK_MINUTES = 15
+# ============================================================
+# ===== WEAK FILE PIN LIST START =====
+# ============================================================
+
+WEAK_FILE_PINS = {
+
+    "0000",
+    "1111",
+    "2222",
+    "3333",
+    "4444",
+    "5555",
+    "6666",
+    "7777",
+    "8888",
+    "9999",
+    "1234",
+    "4321"
+
+}
+
+# ============================================================
+# ===== WEAK FILE PIN LIST END =====
+# ============================================================
+
+# ============================================================
+# ===== FILE PIN SECURITY SETTINGS END =====
+# ============================================================
 
 CLEANUP_INTERVAL_SECONDS = 60
 
 last_cleanup_timestamp = 0
 
+# ============================================================
+# ===== ADMIN LOGIN SECURITY SETTINGS START =====
+# ============================================================
+
+MAX_ADMIN_LOGIN_ATTEMPTS = 5
+
+ADMIN_LOGIN_LOCK_MINUTES = 10
+
+admin_failed_login_attempts = 0
+
+admin_login_locked_until = None
+
+# ============================================================
+# ===== ADMIN LOGIN SECURITY SETTINGS END =====
+# ============================================================
 # ===== 04. SECURITY SETTINGS END =====
 
 
@@ -207,6 +408,31 @@ def create_database():
         )
         """
     )
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS report_abuse (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            full_name TEXT NOT NULL,
+
+            email TEXT NOT NULL,
+
+            access_code TEXT,
+
+            complaint_type TEXT NOT NULL,
+
+            subject TEXT NOT NULL,
+
+            description TEXT NOT NULL,
+
+            status TEXT DEFAULT 'Pending',
+
+            created_at TEXT NOT NULL
+
+        )
+        """
+    )
 
     connection.commit()
 
@@ -268,6 +494,259 @@ def allowed_file(filename):
         filename.rsplit(".", 1)[1].lower()
         in ALLOWED_EXTENSIONS
     )
+# ============================================================
+# ===== REAL FILE SIGNATURE VALIDATION START =====
+# ============================================================
+
+OLE_SIGNATURE = bytes.fromhex(
+    "D0CF11E0A1B11AE1"
+)
+
+
+def validate_uploaded_file_signature(
+    uploaded_file,
+    file_extension
+):
+
+    try:
+
+        uploaded_file.stream.seek(0)
+
+        file_data = uploaded_file.stream.read()
+
+        uploaded_file.stream.seek(0)
+
+        if not file_data:
+
+            return False, "The selected file is empty."
+
+        # ===== PDF VALIDATION =====
+
+        if file_extension == "pdf":
+
+            if not file_data.startswith(
+                b"%PDF-"
+            ):
+
+                return (
+                    False,
+                    "The uploaded file is not a valid PDF."
+                )
+
+            return True, None
+
+
+        # ===== PNG VALIDATION =====
+
+        if file_extension == "png":
+
+            png_signature = (
+                b"\x89PNG\r\n\x1a\n"
+            )
+
+            if not file_data.startswith(
+                png_signature
+            ):
+
+                return (
+                    False,
+                    "The uploaded file is not a valid PNG image."
+                )
+
+            return True, None
+
+
+        # ===== JPEG VALIDATION =====
+
+        if file_extension in {
+            "jpg",
+            "jpeg"
+        }:
+
+            if not file_data.startswith(
+                b"\xff\xd8\xff"
+            ):
+
+                return (
+                    False,
+                    "The uploaded file is not a valid JPEG image."
+                )
+
+            return True, None
+
+
+        # ===== TEXT VALIDATION =====
+
+        if file_extension == "txt":
+
+            sample = file_data[:8192]
+
+            if b"\x00" in sample:
+
+                return (
+                    False,
+                    "The uploaded file is not a valid text file."
+                )
+
+            try:
+
+                sample.decode(
+                    "utf-8"
+                )
+
+            except UnicodeDecodeError:
+
+                try:
+
+                    sample.decode(
+                        "latin-1"
+                    )
+
+                except UnicodeDecodeError:
+
+                    return (
+                        False,
+                        "The uploaded file is not a valid text file."
+                    )
+
+            return True, None
+
+
+        # ===== LEGACY MICROSOFT OFFICE VALIDATION =====
+
+        if file_extension in {
+            "doc",
+            "xls",
+            "ppt"
+        }:
+
+            if not file_data.startswith(
+                OLE_SIGNATURE
+            ):
+
+                return (
+                    False,
+                    "The uploaded Microsoft Office file is invalid."
+                )
+
+            return True, None
+
+
+        # ===== ZIP-BASED FILE VALIDATION =====
+
+        if file_extension in {
+            "zip",
+            "docx",
+            "xlsx",
+            "pptx"
+        }:
+
+            if not file_data.startswith(
+                b"PK"
+            ):
+
+                return (
+                    False,
+                    "The uploaded ZIP or Office file is invalid."
+                )
+
+            try:
+
+                with zipfile.ZipFile(
+                    BytesIO(file_data)
+                ) as zip_file:
+
+                    zip_members = set(
+                        zip_file.namelist()
+                    )
+
+                    bad_member = zip_file.testzip()
+
+                    if bad_member is not None:
+
+                        return (
+                            False,
+                            "The uploaded archive is corrupted."
+                        )
+
+                    if file_extension == "docx":
+
+                        if not any(
+                            member.startswith(
+                                "word/"
+                            )
+                            for member in zip_members
+                        ):
+
+                            return (
+                                False,
+                                "The uploaded file is not a valid DOCX document."
+                            )
+
+                    elif file_extension == "xlsx":
+
+                        if not any(
+                            member.startswith(
+                                "xl/"
+                            )
+                            for member in zip_members
+                        ):
+
+                            return (
+                                False,
+                                "The uploaded file is not a valid XLSX spreadsheet."
+                            )
+
+                    elif file_extension == "pptx":
+
+                        if not any(
+                            member.startswith(
+                                "ppt/"
+                            )
+                            for member in zip_members
+                        ):
+
+                            return (
+                                False,
+                                "The uploaded file is not a valid PPTX presentation."
+                            )
+
+            except (
+                zipfile.BadZipFile,
+                RuntimeError,
+                ValueError
+            ):
+
+                return (
+                    False,
+                    "The uploaded archive or Office file is invalid."
+                )
+
+            return True, None
+
+
+        return (
+            False,
+            "This file type is not supported."
+        )
+
+    except (
+        OSError,
+        AttributeError,
+        ValueError
+    ):
+
+        uploaded_file.stream.seek(0)
+
+        return (
+            False,
+            "The file could not be securely validated."
+        )
+
+
+# ============================================================
+# ===== REAL FILE SIGNATURE VALIDATION END =====
+# ============================================================
 
 # ===== 10. FILE VALIDATION END =====
 
@@ -307,10 +786,12 @@ def generate_access_code():
 
     while True:
 
+        # Cryptographically secure 6-digit access code.
         access_code = str(
-            random.randint(
-                100000,
-                999999
+            100000
+            +
+            secrets.randbelow(
+                900000
             )
         )
 
@@ -365,19 +846,22 @@ def is_file_expired(file_record):
 
 def mark_file_expired(file_record):
 
+    # Physical file delete karo.
     delete_stored_file(
         file_record["stored_filename"]
     )
 
     connection = get_database_connection()
 
+    # Database record permanently delete karo.
     connection.execute(
         """
-        UPDATE files
-        SET status = 'expired'
+        DELETE FROM files
         WHERE id = ?
         """,
-        (file_record["id"],)
+        (
+            file_record["id"],
+        )
     )
 
     connection.commit()
@@ -429,17 +913,20 @@ def cleanup_expired_files():
 
         if is_file_expired(file_record):
 
+            # Physical file delete karo.
             delete_stored_file(
                 file_record["stored_filename"]
             )
 
+            # Database record permanently delete karo.
             connection.execute(
                 """
-                UPDATE files
-                SET status = 'expired'
+                DELETE FROM files
                 WHERE id = ?
                 """,
-                (file_record["id"],)
+                (
+                    file_record["id"],
+                )
             )
 
             deleted_count += 1
@@ -451,6 +938,64 @@ def cleanup_expired_files():
     return deleted_count
 
 # ===== 17. AUTOMATIC EXPIRED FILE CLEANUP END =====
+
+# ============================================================
+# ===== PERMANENT EXPIRED RECORD CLEANUP START =====
+# ============================================================
+
+def permanently_delete_expired_files():
+
+    connection = get_database_connection()
+
+    expired_records = connection.execute(
+        """
+        SELECT *
+        FROM files
+        WHERE status = 'expired'
+        """
+    ).fetchall()
+
+    deleted_count = 0
+
+    deleted_storage = 0
+
+    for file_record in expired_records:
+
+        # Physical file agar abhi bhi storage me hai,
+        # to use permanently delete karo.
+        delete_stored_file(
+            file_record["stored_filename"]
+        )
+
+        deleted_storage += (
+            file_record["file_size"]
+            or 0
+        )
+
+        connection.execute(
+            """
+            DELETE FROM files
+            WHERE id = ?
+            """,
+            (
+                file_record["id"],
+            )
+        )
+
+        deleted_count += 1
+
+    connection.commit()
+
+    connection.close()
+
+    return {
+        "deleted_count": deleted_count,
+        "deleted_storage": deleted_storage
+    }
+
+# ============================================================
+# ===== PERMANENT EXPIRED RECORD CLEANUP END =====
+# ============================================================
 
 
 # ===== 18. PERIODIC CLEANUP BEFORE REQUEST START =====
@@ -618,6 +1163,121 @@ def reset_pin_security(file_id):
 
 # ===== 22. RESET PIN SECURITY END =====
 
+# ============================================================
+# ===== SUPPORT REQUESTS TABLE START =====
+# ============================================================
+
+def create_support_requests_table():
+
+    connection = get_database_connection()
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS support_requests (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            ticket_id TEXT UNIQUE,
+
+            name TEXT NOT NULL,
+
+            email TEXT NOT NULL,
+
+            access_code TEXT,
+
+            problem_type TEXT NOT NULL,
+
+            subject TEXT NOT NULL,
+
+            message TEXT NOT NULL,
+
+            created_at TEXT NOT NULL,
+
+            status TEXT DEFAULT 'pending'
+
+        )
+        """
+    )
+
+    connection.commit()
+
+    connection.close()
+
+# ============================================================
+# ===== SUPPORT REQUESTS TABLE END =====
+# ============================================================
+
+
+# ============================================================
+# ===== SECURITY RESPONSE HEADERS START =====
+# ============================================================
+
+@app.after_request
+def add_security_headers(response):
+
+    # Browser ko MIME type guess karne se rokta hai.
+    response.headers.setdefault(
+        "X-Content-Type-Options",
+        "nosniff"
+    )
+
+    # Fyloq ko iframe me embed karke clickjacking rokta hai.
+    response.headers.setdefault(
+        "X-Frame-Options",
+        "DENY"
+    )
+
+    # External pages ko unnecessary referrer information kam deta hai.
+    response.headers.setdefault(
+        "Referrer-Policy",
+        "strict-origin-when-cross-origin"
+    )
+
+    # Camera, microphone aur geolocation access disable karta hai.
+    response.headers.setdefault(
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=()"
+    )
+
+    response.headers.setdefault(
+        "Cross-Origin-Opener-Policy",
+        "same-origin"
+    )
+
+    response.headers.setdefault(
+        "Cross-Origin-Resource-Policy",
+        "same-origin"
+    )
+
+    # Production HTTPS par browser ko HTTPS prefer karne bolta hai.
+    if IS_PRODUCTION:
+
+        response.headers.setdefault(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains"
+        )
+
+    # Admin pages browser cache me save nahi honge.
+    if request.path.startswith(
+        "/admin"
+    ):
+
+        response.headers[
+            "Cache-Control"
+        ] = (
+            "no-store, no-cache, must-revalidate, "
+            "private, max-age=0"
+        )
+
+        response.headers[
+            "Pragma"
+        ] = "no-cache"
+
+    return response
+
+# ============================================================
+# ===== SECURITY RESPONSE HEADERS END =====
+# ============================================================
 
 # ===== 23. HOME ROUTE START =====
 
@@ -630,6 +1290,545 @@ def home():
 
 # ===== 23. HOME ROUTE END =====
 
+# ============================================================
+# ===== SUPPORT PAGE ROUTE START =====
+# ============================================================
+
+@app.route(
+    "/support",
+    methods=["GET", "POST"]
+)
+@limiter.limit("5 per hour")
+def support_page():
+
+    success_message = None
+
+    error_message = None
+
+    ticket_id = None
+
+    if request.method == "POST":
+
+        # ===== SUPPORT FORM DATA START =====
+
+        name = request.form.get(
+            "name",
+            ""
+        ).strip()
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        access_code = request.form.get(
+            "access_code",
+            ""
+        ).strip()
+
+        problem_type = request.form.get(
+            "problem_type",
+            ""
+        ).strip()
+
+        subject = request.form.get(
+            "subject",
+            ""
+        ).strip()
+
+        support_message = request.form.get(
+            "message",
+            ""
+        ).strip()
+
+        support_consent = request.form.get(
+            "support_consent",
+            ""
+        )
+
+        # ===== SUPPORT FORM DATA END =====
+
+
+        # ===== SUPPORT FORM VALIDATION START =====
+
+        if not name:
+
+            error_message = (
+                "Please enter your name."
+            )
+
+        elif len(name) > 80:
+
+            error_message = (
+                "Name is too long."
+            )
+
+        elif (
+            not email
+            or
+            "@" not in email
+            or
+            "." not in email.split("@")[-1]
+        ):
+
+            error_message = (
+                "Please enter a valid email address."
+            )
+
+        elif len(email) > 120:
+
+            error_message = (
+                "Email address is too long."
+            )
+
+        elif (
+            access_code
+            and
+            not (
+                access_code.isdigit()
+                and
+                len(access_code) == 6
+            )
+        ):
+
+            error_message = (
+                "Access code must contain exactly 6 digits."
+            )
+
+        elif not problem_type:
+
+            error_message = (
+                "Please select a problem type."
+            )
+
+        elif not subject:
+
+            error_message = (
+                "Please enter a subject."
+            )
+
+        elif len(subject) > 150:
+
+            error_message = (
+                "Subject is too long."
+            )
+
+        elif not support_message:
+
+            error_message = (
+                "Please describe your problem."
+            )
+
+        elif len(support_message) > 2000:
+
+            error_message = (
+                "Problem description cannot exceed 2000 characters."
+            )
+
+        elif support_consent != "yes":
+
+            error_message = (
+                "Please accept the support request consent."
+            )
+
+        # ===== SUPPORT FORM VALIDATION END =====
+
+
+        # ===== SAVE SUPPORT REQUEST START =====
+
+        if error_message is None:
+
+            created_at = datetime.now()
+
+            connection = get_database_connection()
+
+            cursor = connection.execute(
+                """
+                INSERT INTO support_requests (
+
+                    ticket_id,
+                    name,
+                    email,
+                    access_code,
+                    problem_type,
+                    subject,
+                    message,
+                    created_at,
+                    status
+
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    None,
+                    name,
+                    email,
+                    access_code or None,
+                    problem_type,
+                    subject,
+                    support_message,
+                    created_at.isoformat(),
+                    "pending"
+                )
+            )
+
+            request_id = cursor.lastrowid
+
+            ticket_id = (
+                "FY-"
+                +
+                created_at.strftime(
+                    "%Y%m%d"
+                )
+                +
+                "-"
+                +
+                str(request_id).zfill(5)
+            )
+
+            connection.execute(
+                """
+                UPDATE support_requests
+                SET ticket_id = ?
+                WHERE id = ?
+                """,
+                (
+                    ticket_id,
+                    request_id
+                )
+            )
+
+            connection.commit()
+
+            connection.close()
+
+            success_message = (
+                "Your support request has been submitted successfully. "
+                "Our support team will review it and contact you through email."
+            )
+
+        # ===== SAVE SUPPORT REQUEST END =====
+
+
+    return render_template(
+        "support.html",
+
+        success_message=success_message,
+
+        error_message=error_message,
+
+        ticket_id=ticket_id
+    )
+
+# ============================================================
+# ===== SUPPORT PAGE ROUTE END =====
+# ============================================================
+
+# ============================================================
+# ===== PRIVACY PAGE ROUTE START =====
+# ============================================================
+
+@app.route("/privacy")
+def privacy_page():
+
+    return render_template(
+        "privacy.html"
+    )
+
+# ============================================================
+# ===== PRIVACY PAGE ROUTE END =====
+# ============================================================
+
+# ============================================================
+# ===== TERMS PAGE ROUTE START =====
+# ============================================================
+
+@app.route("/terms")
+def terms_page():
+
+    return render_template(
+        "terms.html"
+    )
+
+# ============================================================
+# ===== TERMS PAGE ROUTE END =====
+# ============================================================
+
+# ============================================================
+# ===== LEGAL NOTICE PAGE ROUTE START =====
+# ============================================================
+
+@app.route("/legal")
+def legal_page():
+
+    return render_template(
+        "legal.html"
+    )
+
+# ============================================================
+# ===== LEGAL NOTICE PAGE ROUTE END =====
+# ============================================================
+
+# ============================================================
+# ===== REPORT ABUSE PAGE ROUTE START =====
+# ============================================================
+
+@app.route(
+    "/report-abuse",
+    methods=["GET", "POST"]
+)
+@limiter.limit("5 per hour")
+def report_abuse_page():
+
+    success_message = None
+
+    error_message = None
+
+    complaint_id = None
+
+
+    # ===== REPORT ABUSE FORM SUBMIT START =====
+
+    if request.method == "POST":
+
+        full_name = request.form.get(
+            "full_name",
+            ""
+        ).strip()
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        access_code = request.form.get(
+            "access_code",
+            ""
+        ).strip()
+
+        complaint_type = request.form.get(
+            "complaint_type",
+            ""
+        ).strip().lower()
+
+        subject = request.form.get(
+            "subject",
+            ""
+        ).strip()
+
+        description = request.form.get(
+            "description",
+            ""
+        ).strip()
+
+        declaration = request.form.get(
+            "declaration",
+            ""
+        )
+
+
+        # ===== ALLOWED COMPLAINT TYPES START =====
+
+        allowed_complaint_types = {
+            "copyright",
+            "malware",
+            "privacy",
+            "fraud",
+            "harassment",
+            "illegal_content",
+            "security",
+            "other"
+        }
+
+        # ===== ALLOWED COMPLAINT TYPES END =====
+
+
+        # ===== FORM VALIDATION START =====
+
+        if not full_name:
+
+            error_message = (
+                "Please enter your full name."
+            )
+
+        elif len(full_name) > 80:
+
+            error_message = (
+                "Full name cannot exceed 80 characters."
+            )
+
+        elif (
+            not email
+            or
+            "@" not in email
+            or
+            "." not in email.split("@")[-1]
+        ):
+
+            error_message = (
+                "Please enter a valid email address."
+            )
+
+        elif len(email) > 120:
+
+            error_message = (
+                "Email address cannot exceed 120 characters."
+            )
+
+        elif (
+            access_code
+            and
+            not (
+                access_code.isdigit()
+                and
+                len(access_code) == 6
+            )
+        ):
+
+            error_message = (
+                "Access code must contain exactly 6 digits."
+            )
+
+        elif (
+            complaint_type
+            not in allowed_complaint_types
+        ):
+
+            error_message = (
+                "Please select a valid complaint type."
+            )
+
+        elif not subject:
+
+            error_message = (
+                "Please enter the complaint subject."
+            )
+
+        elif len(subject) > 150:
+
+            error_message = (
+                "Subject cannot exceed 150 characters."
+            )
+
+        elif not description:
+
+            error_message = (
+                "Please describe the complaint."
+            )
+
+        elif len(description) > 3000:
+
+            error_message = (
+                "Complaint description cannot exceed 3000 characters."
+            )
+
+        elif declaration != "yes":
+
+            error_message = (
+                "Please confirm the complaint declaration."
+            )
+
+        # ===== FORM VALIDATION END =====
+
+
+        # ===== SAVE COMPLAINT START =====
+
+        if error_message is None:
+
+            created_at = datetime.now()
+
+            connection = get_database_connection()
+
+            cursor = connection.execute(
+                """
+                INSERT INTO report_abuse (
+
+                    full_name,
+                    email,
+                    access_code,
+                    complaint_type,
+                    subject,
+                    description,
+                    status,
+                    created_at
+
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    full_name,
+                    email,
+                    access_code or None,
+                    complaint_type,
+                    subject,
+                    description,
+                    "Pending",
+                    created_at.isoformat()
+                )
+            )
+
+            report_id = cursor.lastrowid
+
+            connection.commit()
+
+            connection.close()
+
+            complaint_id = (
+                "FY-AB-"
+                +
+                str(report_id).zfill(6)
+            )
+
+            success_message = (
+                "Your abuse report has been submitted successfully. "
+                "Our team will review the complaint and contact you "
+                "through the email address provided."
+            )
+
+        # ===== SAVE COMPLAINT END =====
+
+    # ===== REPORT ABUSE FORM SUBMIT END =====
+
+
+    return render_template(
+        "report_abuse.html",
+
+        success_message=success_message,
+
+        error_message=error_message,
+
+        complaint_id=complaint_id
+    )
+
+# ============================================================
+# ===== REPORT ABUSE PAGE ROUTE END =====
+# ============================================================
+
+
+# ============================================================
+# ===== ADMIN PASSWORD VERIFICATION HELPER START =====
+# ============================================================
+
+def verify_admin_password(password):
+
+    # Production ke liye hashed password preferred hai.
+    if ADMIN_PASSWORD_HASH:
+
+        return check_password_hash(
+            ADMIN_PASSWORD_HASH,
+            password
+        )
+
+    # Plain environment-password fallback ke liye
+    # timing-safe comparison use hota hai.
+    return hmac.compare_digest(
+        password,
+        ADMIN_PASSWORD
+    )
+
+# ============================================================
+# ===== ADMIN PASSWORD VERIFICATION HELPER END =====
+# ============================================================
 
 # ============================================================
 # ===== 24. ADMIN LOGIN ROUTE START =====
@@ -639,7 +1838,15 @@ def home():
     "/admin-login",
     methods=["GET", "POST"]
 )
+@limiter.limit("10 per 15 minutes")
 def admin_login():
+
+    global admin_failed_login_attempts
+
+    global admin_login_locked_until
+
+
+    # ===== ALREADY LOGGED-IN CHECK START =====
 
     if session.get("admin_logged_in"):
 
@@ -647,7 +1854,49 @@ def admin_login():
             url_for("admin_dashboard")
         )
 
+    # ===== ALREADY LOGGED-IN CHECK END =====
+
+
     error = None
+
+
+    # ===== ADMIN LOCK CHECK START =====
+
+    if admin_login_locked_until:
+
+        remaining_seconds = int(
+            (
+                admin_login_locked_until
+                -
+                datetime.now()
+            ).total_seconds()
+        )
+
+        if remaining_seconds > 0:
+
+            remaining_minutes = max(
+                1,
+                (
+                    remaining_seconds + 59
+                ) // 60
+            )
+
+            error = (
+                "Too many incorrect login attempts. "
+                f"Try again after {remaining_minutes} minute(s)."
+            )
+
+            return render_template(
+                "admin_login.html",
+                error=error
+            )
+
+        admin_failed_login_attempts = 0
+
+        admin_login_locked_until = None
+
+    # ===== ADMIN LOCK CHECK END =====
+
 
     if request.method == "POST":
 
@@ -661,21 +1910,88 @@ def admin_login():
             ""
         )
 
+
+        # ===== EMPTY FIELD VALIDATION START =====
+
+        if not username or not password:
+
+            error = (
+                "Please enter both username and password."
+            )
+
+            return render_template(
+                "admin_login.html",
+                error=error
+            )
+
+        # ===== EMPTY FIELD VALIDATION END =====
+
+
+        # ===== SUCCESSFUL LOGIN START =====
+
         if (
-            username == ADMIN_USERNAME
+            hmac.compare_digest(
+                username,
+                ADMIN_USERNAME
+            )
             and
-            password == ADMIN_PASSWORD
+            verify_admin_password(
+                password
+            )
         ):
 
+            admin_failed_login_attempts = 0
+
+            admin_login_locked_until = None
+
+            session.clear()
+
             session["admin_logged_in"] = True
+
+            session.permanent = True
 
             return redirect(
                 url_for("admin_dashboard")
             )
 
-        error = (
-            "Incorrect admin username or password."
+        # ===== SUCCESSFUL LOGIN END =====
+
+
+        # ===== FAILED LOGIN START =====
+
+        admin_failed_login_attempts += 1
+
+        attempts_left = (
+            MAX_ADMIN_LOGIN_ATTEMPTS
+            -
+            admin_failed_login_attempts
         )
+
+        if attempts_left <= 0:
+
+            admin_login_locked_until = (
+                datetime.now()
+                +
+                timedelta(
+                    minutes=ADMIN_LOGIN_LOCK_MINUTES
+                )
+            )
+
+            error = (
+                "Too many incorrect login attempts. "
+                f"Admin login is locked for "
+                f"{ADMIN_LOGIN_LOCK_MINUTES} minutes."
+            )
+
+        else:
+
+            error = (
+                "Incorrect admin username or password. "
+                f"{attempts_left} attempt(s) remaining."
+            )
+
+        # ===== FAILED LOGIN END =====
+
 
     return render_template(
         "admin_login.html",
@@ -684,7 +2000,7 @@ def admin_login():
 
 # ============================================================
 # ===== 24. ADMIN LOGIN ROUTE END =====
-# ============================================================
+# ===========================================================================
 
 
 # ============================================================
@@ -868,6 +2184,45 @@ def admin_dashboard():
 
     # ===== ACTIVE STORAGE END =====
 
+    # ===== SUPPORT REQUEST COUNT START =====
+
+    total_support_requests = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM support_requests
+        """
+    ).fetchone()[0]
+
+    pending_support_requests = connection.execute(
+    """
+    SELECT COUNT(*)
+    FROM support_requests
+    WHERE LOWER(status) = 'pending'
+    """
+).fetchone()[0]
+
+    # ===== SUPPORT REQUEST COUNT END =====
+
+
+    # ===== ABUSE REPORT COUNT START =====
+
+    total_abuse_reports = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM report_abuse
+        """
+    ).fetchone()[0]
+
+    pending_abuse_reports = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM report_abuse
+        WHERE LOWER(status) = 'pending'
+        """
+    ).fetchone()[0]
+
+    # ===== ABUSE REPORT COUNT END =====
+
     connection.close()
 
     # ===== STORAGE PERCENTAGE START =====
@@ -945,6 +2300,13 @@ def admin_dashboard():
         expired_files=expired_files,
 
         total_downloads=total_downloads,
+        total_support_requests=total_support_requests,
+
+        pending_support_requests=pending_support_requests,
+
+        total_abuse_reports=total_abuse_reports,
+
+        pending_abuse_reports=pending_abuse_reports,
 
         storage_used=format_size(
             total_storage
@@ -989,13 +2351,25 @@ def admin_cleanup_files():
             url_for("admin_login")
         )
 
-    deleted_count = cleanup_expired_files()
+    cleanup_result = (
+        permanently_delete_expired_files()
+    )
+
+    deleted_count = cleanup_result[
+        "deleted_count"
+    ]
+
+    deleted_storage = cleanup_result[
+        "deleted_storage"
+    ]
 
     return redirect(
         url_for(
             "admin_dashboard",
             message=(
-                f"{deleted_count} expired file(s) cleaned."
+                f"{deleted_count} expired file record(s) "
+                f"permanently deleted. "
+                f"{format_size(deleted_storage)} storage cleared."
             )
         )
     )
@@ -1029,6 +2403,79 @@ def admin_delete_file(file_id):
         FROM files
         WHERE id = ?
         """,
+        (
+            file_id,
+        )
+    ).fetchone()
+
+    if file_record is None:
+
+        connection.close()
+
+        return redirect(
+            url_for(
+                "admin_dashboard",
+                message="File record not found."
+            )
+        )
+
+    # Physical file permanently delete karo.
+    delete_stored_file(
+        file_record["stored_filename"]
+    )
+
+    # Database record permanently delete karo.
+    connection.execute(
+        """
+        DELETE FROM files
+        WHERE id = ?
+        """,
+        (
+            file_id,
+        )
+    )
+
+    connection.commit()
+
+    connection.close()
+
+    return redirect(
+        url_for(
+            "admin_dashboard",
+            message=(
+                "File and database record "
+                "permanently deleted successfully."
+            )
+        )
+    )
+
+# ============================================================
+# ===== 27. ADMIN DELETE FILE ROUTE END =====
+# ============================================================
+# ============================================================
+# ===== ADMIN EXPIRE FILE ROUTE START =====
+# ============================================================
+
+@app.route(
+    "/admin/expire-file/<int:file_id>",
+    methods=["POST"]
+)
+def admin_expire_file(file_id):
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+    connection = get_database_connection()
+
+    file_record = connection.execute(
+        """
+        SELECT *
+        FROM files
+        WHERE id = ?
+        """,
         (file_id,)
     ).fetchone()
 
@@ -1039,9 +2486,18 @@ def admin_delete_file(file_id):
         return redirect(
             url_for(
                 "admin_dashboard",
-                message=(
-                    "File record not found."
-                )
+                message="File record not found."
+            )
+        )
+
+    if file_record["status"] != "active":
+
+        connection.close()
+
+        return redirect(
+            url_for(
+                "admin_dashboard",
+                message="Only active files can be expired."
             )
         )
 
@@ -1051,7 +2507,8 @@ def admin_delete_file(file_id):
 
     connection.execute(
         """
-        DELETE FROM files
+        UPDATE files
+        SET status = 'expired'
         WHERE id = ?
         """,
         (file_id,)
@@ -1064,16 +2521,689 @@ def admin_delete_file(file_id):
     return redirect(
         url_for(
             "admin_dashboard",
+            message="File expired successfully."
+        )
+    )
+
+# ============================================================
+# ===== ADMIN EXPIRE FILE ROUTE END =====
+# ============================================================
+
+# ============================================================
+# ===== ADMIN SUPPORT REQUESTS ROUTE START =====
+# ============================================================
+
+@app.route("/admin/support-requests")
+def admin_support_requests():
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+    search_query = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    status_filter = request.args.get(
+        "status",
+        "all"
+    ).strip().lower()
+
+    allowed_status_filters = {
+        "all",
+        "pending",
+        "solved",
+        "closed"
+    }
+
+    if status_filter not in allowed_status_filters:
+
+        status_filter = "all"
+
+    connection = get_database_connection()
+
+    query_conditions = []
+
+    query_values = []
+
+    if search_query:
+
+        query_conditions.append(
+            """
+            (
+                ticket_id LIKE ?
+                OR
+                name LIKE ?
+                OR
+                email LIKE ?
+                OR
+                access_code LIKE ?
+                OR
+                subject LIKE ?
+            )
+            """
+        )
+
+        search_value = f"%{search_query}%"
+
+        query_values.extend(
+            [
+                search_value,
+                search_value,
+                search_value,
+                search_value,
+                search_value
+            ]
+        )
+
+    if status_filter != "all":
+
+        query_conditions.append(
+            "status = ?"
+        )
+
+        query_values.append(
+            status_filter
+        )
+
+    support_query = """
+        SELECT *
+        FROM support_requests
+    """
+
+    if query_conditions:
+
+        support_query += (
+            " WHERE "
+            +
+            " AND ".join(
+                query_conditions
+            )
+        )
+
+    support_query += " ORDER BY id DESC"
+
+    support_records = connection.execute(
+        support_query,
+        tuple(query_values)
+    ).fetchall()
+
+    total_requests = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM support_requests
+        """
+    ).fetchone()[0]
+
+    pending_requests = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM support_requests
+        WHERE status = 'pending'
+        """
+    ).fetchone()[0]
+
+    solved_requests = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM support_requests
+        WHERE status = 'solved'
+        """
+    ).fetchone()[0]
+
+    closed_requests = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM support_requests
+        WHERE status = 'closed'
+        """
+    ).fetchone()[0]
+
+    connection.close()
+
+    formatted_support_requests = []
+
+    problem_type_names = {
+        "forgot_pin": "Forgot File PIN",
+        "access_code_not_working": "Access Code Not Working",
+        "download_problem": "Download Problem",
+        "upload_problem": "Upload Problem",
+        "expired_file": "Expired or Unavailable File",
+        "wrong_file": "Wrong or Suspicious File",
+        "technical_problem": "Website Technical Problem",
+        "other": "Other Problem"
+    }
+
+    for support_record in support_records:
+
+        formatted_support = dict(
+            support_record
+        )
+
+        formatted_support[
+            "formatted_problem_type"
+        ] = problem_type_names.get(
+            support_record["problem_type"],
+            support_record["problem_type"]
+        )
+
+        try:
+
+            formatted_support[
+                "formatted_created_at"
+            ] = datetime.fromisoformat(
+                support_record["created_at"]
+            ).strftime(
+                "%d %b %Y, %I:%M %p"
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            formatted_support[
+                "formatted_created_at"
+            ] = "Unknown"
+
+        formatted_support_requests.append(
+            formatted_support
+        )
+
+    return render_template(
+        "admin_support_requests.html",
+
+        support_requests=formatted_support_requests,
+
+        total_requests=total_requests,
+
+        pending_requests=pending_requests,
+
+        solved_requests=solved_requests,
+
+        closed_requests=closed_requests,
+
+        search_query=search_query,
+
+        status_filter=status_filter,
+
+        message=request.args.get(
+            "message"
+        )
+    )
+
+# ============================================================
+# ===== ADMIN SUPPORT REQUESTS ROUTE END =====
+# ============================================================
+
+
+# ============================================================
+# ===== ADMIN UPDATE SUPPORT STATUS ROUTE START =====
+# ============================================================
+
+@app.route(
+    "/admin/support-requests/<int:request_id>/status",
+    methods=["POST"]
+)
+def admin_update_support_status(request_id):
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+    new_status = request.form.get(
+        "status",
+        ""
+    ).strip().lower()
+
+    allowed_statuses = {
+        "pending",
+        "solved",
+        "closed"
+    }
+
+    if new_status not in allowed_statuses:
+
+        return redirect(
+            url_for(
+                "admin_support_requests",
+                message="Invalid support status."
+            )
+        )
+
+    connection = get_database_connection()
+
+    support_record = connection.execute(
+        """
+        SELECT id
+        FROM support_requests
+        WHERE id = ?
+        """,
+        (request_id,)
+    ).fetchone()
+
+    if support_record is None:
+
+        connection.close()
+
+        return redirect(
+            url_for(
+                "admin_support_requests",
+                message="Support request not found."
+            )
+        )
+
+    connection.execute(
+        """
+        UPDATE support_requests
+        SET status = ?
+        WHERE id = ?
+        """,
+        (
+            new_status,
+            request_id
+        )
+    )
+
+    connection.commit()
+
+    connection.close()
+
+    return redirect(
+        url_for(
+            "admin_support_requests",
+            message="Support request status updated."
+        )
+    )
+
+# ============================================================
+# ===== ADMIN UPDATE SUPPORT STATUS ROUTE END =====
+# ============================================================
+
+# ============================================================
+# ===== ADMIN ABUSE REPORTS ROUTE START =====
+# ============================================================
+
+@app.route("/admin/abuse-reports")
+def admin_abuse_reports():
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+
+    # ===== SEARCH AND STATUS FILTER START =====
+
+    search_query = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    status_filter = request.args.get(
+        "status",
+        "all"
+    ).strip().lower()
+
+    allowed_status_filters = {
+        "all",
+        "pending",
+        "investigating",
+        "resolved",
+        "closed"
+    }
+
+    if status_filter not in allowed_status_filters:
+
+        status_filter = "all"
+
+    # ===== SEARCH AND STATUS FILTER END =====
+
+
+    connection = get_database_connection()
+
+
+    # ===== ABUSE REPORT QUERY START =====
+
+    query_conditions = []
+
+    query_values = []
+
+    if search_query:
+
+        query_conditions.append(
+            """
+            (
+                full_name LIKE ?
+                OR
+                email LIKE ?
+                OR
+                access_code LIKE ?
+                OR
+                complaint_type LIKE ?
+                OR
+                subject LIKE ?
+                OR
+                description LIKE ?
+            )
+            """
+        )
+
+        search_value = (
+            f"%{search_query}%"
+        )
+
+        query_values.extend(
+            [
+                search_value,
+                search_value,
+                search_value,
+                search_value,
+                search_value,
+                search_value
+            ]
+        )
+
+    if status_filter != "all":
+
+        query_conditions.append(
+            "LOWER(status) = ?"
+        )
+
+        query_values.append(
+            status_filter
+        )
+
+    abuse_query = """
+        SELECT *
+        FROM report_abuse
+    """
+
+    if query_conditions:
+
+        abuse_query += (
+            " WHERE "
+            +
+            " AND ".join(
+                query_conditions
+            )
+        )
+
+    abuse_query += (
+        " ORDER BY id DESC"
+    )
+
+    abuse_records = connection.execute(
+        abuse_query,
+        tuple(query_values)
+    ).fetchall()
+
+    # ===== ABUSE REPORT QUERY END =====
+
+
+    # ===== ABUSE REPORT STATISTICS START =====
+
+    total_reports = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM report_abuse
+        """
+    ).fetchone()[0]
+
+    pending_reports = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM report_abuse
+        WHERE LOWER(status) = 'pending'
+        """
+    ).fetchone()[0]
+
+    investigating_reports = (
+        connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM report_abuse
+            WHERE LOWER(status) = 'investigating'
+            """
+        ).fetchone()[0]
+    )
+
+    resolved_reports = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM report_abuse
+        WHERE LOWER(status) = 'resolved'
+        """
+    ).fetchone()[0]
+
+    closed_reports = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM report_abuse
+        WHERE LOWER(status) = 'closed'
+        """
+    ).fetchone()[0]
+
+    # ===== ABUSE REPORT STATISTICS END =====
+
+
+    connection.close()
+
+
+    # ===== COMPLAINT TYPE NAMES START =====
+
+    complaint_type_names = {
+
+        "copyright":
+            "Copyright Violation",
+
+        "malware":
+            "Malware or Harmful File",
+
+        "privacy":
+            "Privacy Violation",
+
+        "fraud":
+            "Fraud or Phishing",
+
+        "harassment":
+            "Harassment or Threat",
+
+        "illegal_content":
+            "Illegal Content",
+
+        "security":
+            "Security Incident",
+
+        "other":
+            "Other Complaint"
+
+    }
+
+    # ===== COMPLAINT TYPE NAMES END =====
+
+
+    # ===== FORMAT ABUSE REPORTS START =====
+
+    formatted_reports = []
+
+    for report_record in abuse_records:
+
+        formatted_report = dict(
+            report_record
+        )
+
+        formatted_report[
+            "formatted_complaint_type"
+        ] = complaint_type_names.get(
+            report_record["complaint_type"],
+            report_record["complaint_type"]
+        )
+
+        try:
+
+            formatted_report[
+                "formatted_created_at"
+            ] = datetime.fromisoformat(
+                report_record["created_at"]
+            ).strftime(
+                "%d %b %Y, %I:%M %p"
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            formatted_report[
+                "formatted_created_at"
+            ] = "Unknown"
+
+        formatted_reports.append(
+            formatted_report
+        )
+
+    # ===== FORMAT ABUSE REPORTS END =====
+
+
+    return render_template(
+
+        "admin_abuse_reports.html",
+
+        reports=formatted_reports,
+
+        total_reports=total_reports,
+
+        pending_reports=pending_reports,
+
+        investigating_reports=(
+            investigating_reports
+        ),
+
+        resolved_reports=resolved_reports,
+
+        closed_reports=closed_reports,
+
+        search_query=search_query,
+
+        status_filter=status_filter,
+
+        message=request.args.get(
+            "message"
+        )
+
+    )
+
+# ============================================================
+# ===== ADMIN ABUSE REPORTS ROUTE END =====
+# ============================================================
+
+
+# ============================================================
+# ===== ADMIN UPDATE ABUSE STATUS ROUTE START =====
+# ============================================================
+
+@app.route(
+    "/admin/abuse-reports/<int:report_id>/status",
+    methods=["POST"]
+)
+def admin_update_abuse_status(report_id):
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+
+    new_status = request.form.get(
+        "status",
+        ""
+    ).strip()
+
+
+    allowed_statuses = {
+        "Pending",
+        "Investigating",
+        "Resolved",
+        "Closed"
+    }
+
+
+    if new_status not in allowed_statuses:
+
+        return redirect(
+            url_for(
+                "admin_abuse_reports",
+                message=(
+                    "Invalid complaint status."
+                )
+            )
+        )
+
+
+    connection = get_database_connection()
+
+
+    report_record = connection.execute(
+        """
+        SELECT id
+        FROM report_abuse
+        WHERE id = ?
+        """,
+        (report_id,)
+    ).fetchone()
+
+
+    if report_record is None:
+
+        connection.close()
+
+        return redirect(
+            url_for(
+                "admin_abuse_reports",
+                message=(
+                    "Abuse report not found."
+                )
+            )
+        )
+
+
+    connection.execute(
+        """
+        UPDATE report_abuse
+        SET status = ?
+        WHERE id = ?
+        """,
+        (
+            new_status,
+            report_id
+        )
+    )
+
+    connection.commit()
+
+    connection.close()
+
+
+    return redirect(
+        url_for(
+            "admin_abuse_reports",
             message=(
-                "File deleted successfully."
+                "Abuse report status updated."
             )
         )
     )
 
 # ============================================================
-# ===== 27. ADMIN DELETE FILE ROUTE END =====
+# ===== ADMIN UPDATE ABUSE STATUS ROUTE END =====
 # ============================================================
-
 
 # ============================================================
 # ===== 28. ADMIN LOGOUT ROUTE START =====
@@ -1099,6 +3229,7 @@ def admin_logout():
     "/upload",
     methods=["POST"]
 )
+@limiter.limit("10 per hour")
 def upload_file():
 
     if "file" not in request.files:
@@ -1141,6 +3272,85 @@ def upload_file():
     original_filename = secure_filename(
         uploaded_file.filename
     )
+        # ============================================================
+    # ===== REAL FILE SIGNATURE CHECK START =====
+    # ============================================================
+
+    file_extension = (
+        original_filename
+        .rsplit(
+            ".",
+            1
+        )[1]
+        .lower()
+    )
+
+    signature_valid, signature_error = (
+        validate_uploaded_file_signature(
+            uploaded_file,
+            file_extension
+        )
+    )
+
+    if not signature_valid:
+
+        return jsonify(
+            {
+                "success": False,
+                "message": signature_error
+            }
+        ), 400
+
+    # File pointer reset rakho taaki save ke waqt
+    # complete file correctly save ho.
+    uploaded_file.stream.seek(0)
+
+    # ============================================================
+    # ===== REAL FILE SIGNATURE CHECK END =====
+    # ============================================================
+    # ============================================================
+# ===== UPLOADED FILENAME VALIDATION START =====
+# ============================================================
+
+    if not original_filename:
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                "The selected file has an invalid filename."
+                )
+            }
+        ),  400
+
+
+    if len(original_filename) > 180:
+
+        return jsonify(
+        {
+            "success": False,
+            "message": (
+                "The filename is too long. "
+                "Use a filename shorter than 180 characters."
+            )
+        }
+    ), 400
+
+
+    if original_filename.startswith("."):
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                "Hidden or invalid filenames are not allowed."
+                )
+            }
+        ), 400
+
+# ============================================================
+# ===== UPLOADED FILENAME VALIDATION END =====
+# ============================================================
 
     file_extension = (
         original_filename
@@ -1165,6 +3375,28 @@ def upload_file():
     file_size = os.path.getsize(
         stored_file_path
     )
+    # ============================================================
+    # ===== EMPTY FILE VALIDATION START =====
+    # ============================================================
+
+    if file_size <= 0:
+
+        delete_stored_file(
+            stored_filename
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "Empty files cannot be uploaded."
+                )
+            }
+        ), 400
+
+    # ============================================================
+    # ===== EMPTY FILE VALIDATION END =====
+    # ============================================================
 
     expiry_minutes = request.form.get(
         "expiry_time",
@@ -1195,11 +3427,17 @@ def upload_file():
 
         expiry_minutes = 60
 
+        # ============================================================
+    # ===== FILE PIN VALIDATION START =====
+    # ============================================================
+
     file_pin = request.form.get(
         "file_pin",
         ""
     ).strip()
 
+    # PIN optional hai.
+    # Agar PIN diya hai to exactly 4 digits hona chahiye.
     if (
         file_pin
         and
@@ -1218,11 +3456,40 @@ def upload_file():
             {
                 "success": False,
                 "message": (
-                    "PIN must contain "
-                    "exactly 4 digits."
+                    "PIN must contain exactly 4 digits."
                 )
             }
         ), 400
+
+    # Easy-to-guess PIN ko reject karo.
+    if (
+        file_pin
+        and
+        file_pin in WEAK_FILE_PINS
+    ):
+
+        delete_stored_file(
+            stored_filename
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "This PIN is too easy to guess. "
+                    "Please choose a stronger 4-digit PIN."
+                )
+            }
+        ), 400
+
+    # ============================================================
+    # ===== FILE PIN VALIDATION END =====
+    # ============================================================
+
+
+    # ============================================================
+    # ===== FILE PIN HASHING START =====
+    # ============================================================
 
     pin_hash = None
 
@@ -1231,6 +3498,10 @@ def upload_file():
         pin_hash = generate_password_hash(
             file_pin
         )
+
+    # ============================================================
+    # ===== FILE PIN HASHING END =====
+    # ============================================================
 
     one_time_value = request.form.get(
         "one_time_download",
@@ -1360,6 +3631,7 @@ def upload_file():
     "/access-file",
     methods=["POST"]
 )
+@limiter.limit("20 per minute")
 def access_file():
 
     request_data = request.get_json(
@@ -1730,22 +4002,21 @@ def download_file(access_code):
 
     if file_record["one_time_download"]:
 
-        connection.execute(
-            """
-            UPDATE files
-            SET
-                download_count =
-                    download_count + 1,
-                status = 'downloaded'
-            WHERE id = ?
-            """,
-            (file_record["id"],)
-        )
-
+        # Physical file delete karo.
         delete_stored_file(
             file_record["stored_filename"]
         )
 
+    # Database record permanently delete karo.
+        connection.execute(
+            """
+            DELETE FROM files
+            WHERE id = ?
+            """,
+            (
+                file_record["id"],
+            )
+        )
     else:
 
         connection.execute(
@@ -1806,6 +4077,66 @@ def manual_cleanup_expired_files():
 
 # ===== 32. MANUAL CLEANUP ROUTE END =====
 
+# ============================================================
+# ===== RATE LIMIT ERROR START =====
+# ============================================================
+
+@app.errorhandler(429)
+def rate_limit_error(error):
+
+    if request.path in {
+        "/upload",
+        "/access-file"
+    }:
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "Too many requests. "
+                    "Please wait and try again."
+                )
+            }
+        ), 429
+
+    return (
+        "Too many requests. Please wait and try again.",
+        429
+    )
+
+# ============================================================
+# ===== RATE LIMIT ERROR END =====
+# ============================================================
+
+# ============================================================
+# ===== 404 ERROR HANDLER START =====
+# ============================================================
+
+@app.errorhandler(404)
+def page_not_found(error):
+
+    return render_template(
+        "404.html"
+    ), 404
+
+# ============================================================
+# ===== 404 ERROR HANDLER END =====
+# ============================================================
+
+# ============================================================
+# ===== 500 ERROR HANDLER START =====
+# ============================================================
+
+@app.errorhandler(500)
+def internal_server_error(error):
+
+    return render_template(
+        "500.html"
+    ), 500
+
+# ============================================================
+# ===== 500 ERROR HANDLER END =====
+# ============================================================
 
 # ===== 33. FILE TOO LARGE ERROR START =====
 
@@ -1825,18 +4156,35 @@ def file_too_large(error):
 # ===== 33. FILE TOO LARGE ERROR END =====
 
 
-# ===== 34. APPLICATION START =====
+# ============================================================
+# ===== 34. APPLICATION INITIALIZATION START =====
+# ============================================================
+
+create_database()
+
+migrate_database()
+
+create_support_requests_table()
+
+cleanup_expired_files()
+
+# ============================================================
+# ===== 34. APPLICATION INITIALIZATION END =====
+# ============================================================
+
+
+# ============================================================
+# ===== LOCAL DEVELOPMENT SERVER START =====
+# ============================================================
 
 if __name__ == "__main__":
 
-    create_database()
-
-    migrate_database()
-
-    cleanup_expired_files()
-
     app.run(
-        debug=True
+        debug=not IS_PRODUCTION,
+        host="127.0.0.1",
+        port=5000
     )
 
-# ===== 34. APPLICATION END =====
+# ============================================================
+# ===== LOCAL DEVELOPMENT SERVER END =====
+# ============================================================

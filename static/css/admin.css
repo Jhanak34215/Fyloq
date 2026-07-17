@@ -1,5 +1,5 @@
 /* =========================================================
-   QUICKVAULT ADMIN STYLESHEET
+   FYLOQ ADMIN STYLESHEET
    File: static/css/admin.css
    ========================================================= */
 
@@ -1711,4 +1711,634 @@ a{
 
 /* ========================================================= */
 /* ===== 16. ADMIN SEARCH AND STATUS FILTER END ===== */
+/* ========================================================= */
+
+/* ========================================================= */
+/* ===== 17. ADMIN SUPPORT REQUESTS PAGE START ===== */
+/* ========================================================= */
+
+.admin-support-list{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.admin-support-card{
+    padding:21px;
+
+    background:#11111b;
+    border:1px solid #2d2c3e;
+    border-radius:15px;
+
+    transition:0.22s ease;
+}
+
+.admin-support-card:hover{
+    border-color:#45425b;
+
+    box-shadow:0 16px 35px rgba(0,0,0,0.14);
+}
+
+
+/* ===== SUPPORT CARD HEADER START ===== */
+
+.admin-support-card-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+
+    margin-bottom:18px;
+    padding-bottom:16px;
+
+    border-bottom:1px solid #29283a;
+}
+
+.admin-support-ticket{
+    display:inline-block;
+
+    margin-bottom:8px;
+    padding:6px 9px;
+
+    background:rgba(101,85,232,0.13);
+    color:#9587f8;
+
+    border:1px solid rgba(101,85,232,0.22);
+    border-radius:7px;
+
+    font-family:monospace;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:0.7px;
+}
+
+.admin-support-card-header h3{
+    max-width:680px;
+
+    color:#ffffff;
+
+    font-size:16px;
+    line-height:1.4;
+}
+
+/* ===== SUPPORT CARD HEADER END ===== */
+
+
+/* ===== SUPPORT STATUS BADGES START ===== */
+
+.support-status-pending{
+    background:rgba(239,165,53,0.13);
+    color:#f0ad47;
+
+    border:1px solid rgba(239,165,53,0.22);
+}
+
+.support-status-solved{
+    background:rgba(67,197,133,0.13);
+    color:#4fd493;
+
+    border:1px solid rgba(67,197,133,0.22);
+}
+
+.support-status-closed{
+    background:rgba(63,148,229,0.13);
+    color:#5ba8ed;
+
+    border:1px solid rgba(63,148,229,0.22);
+}
+
+/* ===== SUPPORT STATUS BADGES END ===== */
+
+
+/* ===== SUPPORT USER INFORMATION START ===== */
+
+.admin-support-user-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+
+    gap:11px;
+
+    margin-bottom:16px;
+}
+
+.admin-support-user-grid div{
+    min-width:0;
+
+    padding:12px;
+
+    background:#171722;
+    border:1px solid #2a293a;
+    border-radius:10px;
+}
+
+.admin-support-user-grid span{
+    display:block;
+
+    margin-bottom:6px;
+
+    color:#737384;
+
+    font-size:8px;
+    font-weight:800;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+}
+
+.admin-support-user-grid strong,
+.admin-support-user-grid a{
+    display:block;
+
+    overflow:hidden;
+
+    color:#d8d8e2;
+
+    font-size:10px;
+    line-height:1.5;
+
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.admin-support-user-grid a{
+    color:#8c7df5;
+}
+
+.admin-support-user-grid a:hover{
+    color:#ffffff;
+}
+
+/* ===== SUPPORT USER INFORMATION END ===== */
+
+
+/* ===== SUPPORT MESSAGE BOX START ===== */
+
+.admin-support-message-box{
+    margin-bottom:17px;
+    padding:15px;
+
+    background:#171722;
+    border:1px solid #2a293a;
+    border-radius:11px;
+}
+
+.admin-support-message-box span{
+    display:block;
+
+    margin-bottom:9px;
+
+    color:#8273f2;
+
+    font-size:8px;
+    font-weight:800;
+    letter-spacing:1.3px;
+}
+
+.admin-support-message-box p{
+    color:#b1b1bf;
+
+    font-size:11px;
+    line-height:1.75;
+
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+/* ===== SUPPORT MESSAGE BOX END ===== */
+
+
+/* ===== SUPPORT ACTIONS START ===== */
+
+.admin-support-actions{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+}
+
+.admin-support-email-button{
+    min-height:41px;
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:0 16px;
+
+    background:linear-gradient(
+        135deg,
+        #6555e8,
+        #806ff4
+    );
+
+    color:#ffffff;
+
+    border-radius:10px;
+
+    font-size:10px;
+    font-weight:800;
+
+    box-shadow:0 10px 22px rgba(101,85,232,0.20);
+}
+
+.admin-support-email-button:hover{
+    transform:translateY(-2px);
+}
+
+.admin-support-status-form{
+    display:flex;
+    align-items:center;
+    gap:9px;
+}
+
+.admin-support-status-form select{
+    min-width:130px;
+    height:41px;
+
+    padding:0 32px 0 12px;
+
+    outline:none;
+
+    background:#171722;
+    color:#ffffff;
+
+    border:1px solid #343247;
+    border-radius:9px;
+
+    font-size:10px;
+
+    cursor:pointer;
+}
+
+.admin-support-status-form select:focus{
+    border-color:#6d5dec;
+
+    box-shadow:0 0 0 3px rgba(109,93,236,0.10);
+}
+
+.admin-support-status-form select option{
+    background:#171722;
+    color:#ffffff;
+}
+
+.admin-support-status-form button{
+    min-height:41px;
+
+    padding:0 14px;
+
+    background:#222130;
+    color:#d2d2dc;
+
+    border:1px solid #3a384c;
+    border-radius:9px;
+
+    font-size:10px;
+    font-weight:800;
+
+    cursor:pointer;
+
+    transition:0.2s ease;
+}
+
+.admin-support-status-form button:hover{
+    background:#2d2c3c;
+    color:#ffffff;
+}
+
+/* ===== SUPPORT ACTIONS END ===== */
+
+
+/* ===== SUPPORT EMPTY STATE START ===== */
+
+.admin-support-empty{
+    padding:65px 20px;
+
+    background:#11111b;
+    border:1px dashed #343247;
+    border-radius:14px;
+
+    text-align:center;
+}
+
+.admin-support-empty div{
+    margin-bottom:13px;
+
+    font-size:40px;
+}
+
+.admin-support-empty strong{
+    display:block;
+
+    margin-bottom:8px;
+
+    color:#ddddE6;
+
+    font-size:13px;
+}
+
+.admin-support-empty p{
+    color:#777788;
+
+    font-size:10px;
+    line-height:1.6;
+}
+
+/* ===== SUPPORT EMPTY STATE END ===== */
+
+
+/* ===== SUPPORT TABLET RESPONSIVE START ===== */
+
+@media(max-width:1150px){
+
+    .admin-support-user-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+}
+
+/* ===== SUPPORT TABLET RESPONSIVE END ===== */
+
+
+/* ===== SUPPORT MOBILE RESPONSIVE START ===== */
+
+@media(max-width:760px){
+
+    .admin-support-card-header{
+        flex-direction:column;
+    }
+
+    .admin-support-user-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .admin-support-actions{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .admin-support-email-button{
+        width:100%;
+    }
+
+    .admin-support-status-form{
+        width:100%;
+    }
+
+    .admin-support-status-form select{
+        flex:1;
+    }
+
+}
+
+
+@media(max-width:520px){
+
+    .admin-support-card{
+        padding:15px;
+    }
+
+    .admin-support-user-grid{
+        grid-template-columns:1fr;
+    }
+
+    .admin-support-status-form{
+        flex-direction:column;
+    }
+
+    .admin-support-status-form select,
+    .admin-support-status-form button{
+        width:100%;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== 17. ADMIN SUPPORT REQUESTS PAGE END ===== */
+/* ========================================================= */
+
+/* ========================================================= */
+/* ===== 18. ADMIN ABUSE REPORT STATUS START ===== */
+/* ========================================================= */
+
+.abuse-status-pending{
+    background:rgba(239,165,53,0.13);
+    color:#f0ad47;
+
+    border:1px solid rgba(239,165,53,0.22);
+}
+
+.abuse-status-investigating{
+    background:rgba(63,148,229,0.13);
+    color:#5ba8ed;
+
+    border:1px solid rgba(63,148,229,0.22);
+}
+
+.abuse-status-resolved{
+    background:rgba(67,197,133,0.13);
+    color:#4fd493;
+
+    border:1px solid rgba(67,197,133,0.22);
+}
+
+.abuse-status-closed{
+    background:rgba(145,145,165,0.13);
+    color:#a8a8b8;
+
+    border:1px solid rgba(145,145,165,0.22);
+}
+
+/* ========================================================= */
+/* ===== 18. ADMIN ABUSE REPORT STATUS END ===== */
+/* ========================================================= */
+
+/* ========================================================= */
+/* ===== ADMIN FILE ACTION BUTTONS START ===== */
+/* ========================================================= */
+
+.admin-file-actions{
+    display:flex;
+    align-items:center;
+    gap:7px;
+}
+
+.admin-file-actions form{
+    margin:0;
+}
+
+.admin-expire-button{
+    min-height:34px;
+
+    padding:0 11px;
+
+    background:rgba(245,158,11,0.12);
+    color:#f0ad47;
+
+    border:1px solid rgba(245,158,11,0.25);
+    border-radius:8px;
+
+    font-size:9px;
+    font-weight:800;
+
+    cursor:pointer;
+
+    transition:0.2s ease;
+}
+
+.admin-expire-button:hover{
+    background:rgba(245,158,11,0.20);
+    color:#ffffff;
+}
+
+@media(max-width:600px){
+
+    .admin-file-actions{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .admin-file-actions button{
+        width:100%;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== ADMIN FILE ACTION BUTTONS END ===== */
+/* ========================================================= */
+
+/* ========================================================= */
+/* ===== FYLOQ ADMIN BRAND FINAL OVERRIDES START ===== */
+/* ========================================================= */
+
+/* ---------- ADMIN LOGIN LOGO ---------- */
+
+.admin-brand{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    margin-bottom:24px;
+
+    text-decoration:none;
+}
+
+.admin-brand-logo{
+    width:150px;
+    height:auto;
+
+    display:block;
+    object-fit:contain;
+}
+
+
+/* ---------- ADMIN SIDEBAR ICON ---------- */
+
+.sidebar-brand{
+    gap:8px;
+}
+
+.sidebar-brand-icon{
+    width:38px !important;
+    height:38px !important;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    padding:0 !important;
+
+    background:transparent !important;
+    border:none !important;
+    border-radius:0 !important;
+
+    box-shadow:none !important;
+    overflow:visible !important;
+}
+
+.sidebar-brand-icon img{
+    width:36px !important;
+    height:36px !important;
+
+    display:block;
+    object-fit:contain;
+}
+
+
+/* ---------- SIDEBAR TEXT ---------- */
+
+.sidebar-brand strong{
+    margin-bottom:3px;
+
+    font-size:16px;
+    line-height:1.1;
+}
+
+.sidebar-brand small{
+    font-size:9px;
+}
+
+
+/* ---------- ACCESSIBILITY ---------- */
+
+.admin-brand:focus-visible,
+.sidebar-brand:focus-visible,
+.admin-login-button:focus-visible,
+.admin-back-link:focus-visible,
+.sidebar-link:focus-visible,
+.sidebar-secondary-link:focus-visible,
+.sidebar-logout-link:focus-visible,
+.admin-refresh-button:focus-visible,
+.admin-topbar-logout:focus-visible,
+.quick-action-button:focus-visible,
+.admin-delete-button:focus-visible,
+.admin-expire-button:focus-visible,
+.admin-support-email-button:focus-visible,
+.admin-support-status-form button:focus-visible,
+.admin-search-form button:focus-visible,
+.admin-clear-filter:focus-visible,
+.admin-form-group input:focus-visible,
+.admin-search-form input:focus-visible,
+.admin-search-form select:focus-visible,
+.admin-support-status-form select:focus-visible{
+    outline:3px solid rgba(34,230,184,0.30);
+    outline-offset:3px;
+}
+
+
+/* ---------- MOBILE ---------- */
+
+@media(max-width:820px){
+
+    .sidebar-brand{
+        gap:0;
+    }
+
+    .sidebar-brand-icon{
+        width:36px !important;
+        height:36px !important;
+    }
+
+    .sidebar-brand-icon img{
+        width:34px !important;
+        height:34px !important;
+    }
+
+}
+
+@media(max-width:560px){
+
+    .admin-brand-logo{
+        width:132px;
+    }
+
+    .admin-login-card{
+        padding-top:28px;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== FYLOQ ADMIN BRAND FINAL OVERRIDES END ===== */
 /* ========================================================= */

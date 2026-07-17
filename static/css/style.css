@@ -1,5 +1,5 @@
 /* =========================================================
-   QUICKVAULT MAIN STYLESHEET
+   FYLOQ MAIN STYLESHEET
    File: static/css/style.css
    ========================================================= */
 
@@ -2809,4 +2809,730 @@ a{
 
 /* ========================================================= */
 /* ===== 18. CANCEL UPLOAD AND FILE ICON END ===== */
+/* ========================================================= */
+
+/* ====================================================== */
+/* ===== DEVELOPER CREDIT START ===== */
+/* ====================================================== */
+
+.developer-credit{
+
+    margin-top:20px;
+
+    text-align:right;
+
+    font-size:14px;
+
+    color:#9ca3af;
+
+}
+
+.developer-credit a{
+
+    color:#5b7cff;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.developer-credit a:hover{
+
+    color:#7c8cff;
+
+    text-decoration:underline;
+
+}
+
+/* Mobile */
+
+@media(max-width:768px){
+
+    .developer-credit{
+
+        text-align:center;
+
+        margin-top:15px;
+
+    }
+
+}
+
+/* ====================================================== */
+/* ===== DEVELOPER CREDIT END ===== */
+/* ====================================================== */
+
+/* ========================================================= */
+/* ===== PROFESSIONAL MAIN FOOTER START ===== */
+/* ========================================================= */
+
+.main-footer{
+    padding:58px 70px 24px;
+
+    background:#0f172a;
+    color:#ffffff;
+}
+
+.main-footer-grid{
+    max-width:1180px;
+
+    display:grid;
+    grid-template-columns:1.4fr 1fr 1fr 1fr;
+
+    gap:42px;
+
+    margin:0 auto 38px;
+}
+
+
+/* ===== FOOTER BRAND START ===== */
+
+.main-footer-logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    margin-bottom:15px;
+
+    color:#ffffff;
+    text-decoration:none;
+}
+
+.main-footer-logo-icon{
+    width:42px;
+    height:42px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #4f46e5
+    );
+
+    border-radius:12px;
+
+    font-size:18px;
+
+    box-shadow:0 10px 24px rgba(37,99,235,0.30);
+}
+
+.main-footer-logo strong{
+    color:#ffffff;
+
+    font-size:18px;
+    font-weight:800;
+}
+
+.main-footer-brand p{
+    max-width:285px;
+
+    color:#94a3b8;
+
+    font-size:12px;
+    line-height:1.75;
+}
+
+/* ===== FOOTER BRAND END ===== */
+
+
+/* ===== FOOTER COLUMNS START ===== */
+
+.main-footer-column{
+    display:flex;
+    flex-direction:column;
+    gap:11px;
+}
+
+.main-footer-column h4{
+    margin-bottom:6px;
+
+    color:#ffffff;
+
+    font-size:13px;
+    font-weight:800;
+}
+
+.main-footer-column a,
+.main-footer-column span{
+    color:#94a3b8;
+
+    font-size:11px;
+    line-height:1.55;
+
+    text-decoration:none;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.main-footer-column a:hover{
+    color:#ffffff;
+
+    transform:translateX(3px);
+}
+
+/* ===== FOOTER COLUMNS END ===== */
+
+
+/* ===== FOOTER BOTTOM START ===== */
+
+.main-footer-bottom{
+    max-width:1180px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+
+    margin:0 auto;
+    padding-top:23px;
+
+    color:#64748b;
+
+    border-top:1px solid rgba(255,255,255,0.10);
+
+    font-size:10px;
+}
+
+.main-footer-developer{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.main-footer-developer span{
+    color:#64748b;
+}
+
+.main-footer-developer a{
+    color:#8da2fb;
+
+    font-weight:700;
+    text-decoration:none;
+
+    transition:0.2s ease;
+}
+
+.main-footer-developer a:hover{
+    color:#ffffff;
+
+    text-decoration:underline;
+}
+
+/* ===== FOOTER BOTTOM END ===== */
+
+
+/* ===== TABLET RESPONSIVE START ===== */
+
+@media(max-width:950px){
+
+    .main-footer{
+        padding-left:30px;
+        padding-right:30px;
+    }
+
+    .main-footer-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+}
+
+/* ===== TABLET RESPONSIVE END ===== */
+
+
+/* ===== MOBILE RESPONSIVE START ===== */
+
+@media(max-width:600px){
+
+    .main-footer{
+        padding:45px 18px 22px;
+    }
+
+    .main-footer-grid{
+        grid-template-columns:1fr;
+
+        gap:28px;
+    }
+
+    .main-footer-brand p{
+        max-width:none;
+    }
+
+    .main-footer-bottom{
+        align-items:flex-start;
+        flex-direction:column;
+
+        gap:9px;
+    }
+
+    .main-footer-developer{
+        flex-wrap:wrap;
+    }
+
+}
+
+/* ===== MOBILE RESPONSIVE END ===== */
+
+/* ========================================================= */
+/* ===== PROFESSIONAL MAIN FOOTER END ===== */
+/* ========================================================= */
+/* ========================================================= */
+/* ===== PREMIUM PIN SECURITY WARNING START ===== */
+/* ========================================================= */
+
+.pin-security-warning{
+    position:relative;
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    margin-top:12px;
+    padding:14px 16px;
+    overflow:hidden;
+    border:1px solid rgba(250, 204, 21, 0.28);
+    border-radius:14px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(250, 204, 21, 0.12),
+            rgba(245, 158, 11, 0.06)
+        );
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter:blur(10px);
+    animation:
+        pinWarningFadeIn 0.28s ease;
+}
+
+.pin-security-warning::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:4px;
+    height:100%;
+    background:
+        linear-gradient(
+            to bottom,
+            #facc15,
+            #f59e0b
+        );
+}
+
+.pin-security-warning::after{
+    content:"";
+    position:absolute;
+    top:-45px;
+    right:-35px;
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    background:rgba(250, 204, 21, 0.10);
+    filter:blur(18px);
+    pointer-events:none;
+}
+
+.pin-security-warning[hidden]{
+    display:none;
+}
+
+.pin-warning-icon{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    width:34px;
+    height:34px;
+    border:1px solid rgba(250, 204, 21, 0.30);
+    border-radius:10px;
+    background:rgba(250, 204, 21, 0.14);
+    color:#facc15;
+    font-size:17px;
+    box-shadow:
+        0 6px 18px rgba(245, 158, 11, 0.14);
+}
+
+.pin-security-warning p{
+    position:relative;
+    z-index:1;
+    margin:0;
+    color:#ddd8e8;
+    font-size:12.5px;
+    line-height:1.55;
+}
+
+.pin-security-warning strong{
+    display:block;
+    margin-bottom:3px;
+    color:#fff4bf;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:0.1px;
+}
+
+.pin-security-warning span:not(.pin-warning-icon){
+    display:block;
+    color:#cfc9da;
+}
+
+@keyframes pinWarningFadeIn{
+
+    from{
+        opacity:0;
+        transform:translateY(-4px) scale(0.99);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+
+}
+
+@media (max-width:600px){
+
+    .pin-security-warning{
+        gap:10px;
+        padding:12px 13px;
+        border-radius:12px;
+    }
+
+    .pin-warning-icon{
+        width:32px;
+        height:32px;
+        font-size:16px;
+    }
+
+    .pin-security-warning p{
+        font-size:12px;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== PREMIUM PIN SECURITY WARNING END ===== */
+/* ========================================================= */
+.brand-icon{
+
+    width:42px;
+    height:42px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:transparent !important;
+    box-shadow:none;
+    border:none;
+    border-radius:0;
+    padding:0;
+
+}
+
+.brand-icon img{
+
+    width:40px;
+    height:40px;
+
+    display:block;
+    object-fit:contain;
+
+}
+/* ========================================================= */
+/* ===== FYLOQ TRANSPARENT ICON FIX START ===== */
+/* ========================================================= */
+
+.brand-icon,
+.dashboard-brand-icon,
+.main-footer-logo-icon{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:0;
+
+    background:transparent !important;
+    border:none !important;
+    box-shadow:none !important;
+
+    overflow:visible;
+}
+
+.brand-icon{
+
+    width:42px;
+    height:42px;
+
+    border-radius:0;
+}
+
+.dashboard-brand-icon{
+
+    width:34px;
+    height:34px;
+
+    border-radius:0;
+}
+
+.main-footer-logo-icon{
+
+    width:40px;
+    height:40px;
+
+    border-radius:0;
+}
+
+.brand-icon img{
+
+    width:40px !important;
+    height:40px !important;
+
+    display:block;
+
+    object-fit:contain;
+}
+
+.dashboard-brand-icon img{
+
+    width:32px !important;
+    height:32px !important;
+
+    display:block;
+
+    object-fit:contain;
+}
+
+.main-footer-logo-icon img{
+
+    width:38px !important;
+    height:38px !important;
+
+    display:block;
+
+    object-fit:contain;
+}
+
+@media(max-width:560px){
+
+    .brand-icon{
+
+        width:38px;
+        height:38px;
+    }
+
+    .brand-icon img{
+
+        width:36px !important;
+        height:36px !important;
+    }
+
+    .dashboard-brand-icon{
+
+        width:30px;
+        height:30px;
+    }
+
+    .dashboard-brand-icon img{
+
+        width:28px !important;
+        height:28px !important;
+    }
+
+    .main-footer-logo-icon{
+
+        width:36px;
+        height:36px;
+    }
+
+    .main-footer-logo-icon img{
+
+        width:34px !important;
+        height:34px !important;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== FYLOQ TRANSPARENT ICON FIX END ===== */
+/* ========================================================= */
+
+/* ========================================================= */
+/* ===== FYLOQ BRAND FINAL OVERRIDES START ===== */
+/* ========================================================= */
+
+/* Navbar: transparent icon with Fyloq text close to it */
+.brand{
+    display:flex;
+    align-items:center;
+    gap:6px;
+
+    text-decoration:none;
+}
+
+.brand-icon{
+    width:42px !important;
+    height:42px !important;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    padding:0 !important;
+
+    background:transparent !important;
+    border:none !important;
+    border-radius:0 !important;
+
+    box-shadow:none !important;
+    overflow:visible !important;
+}
+
+.brand-icon img{
+    width:42px !important;
+    height:42px !important;
+
+    display:block;
+    object-fit:contain;
+}
+
+.brand-name{
+    margin:0;
+    padding:0;
+
+    color:#18172d;
+
+    font-size:22px;
+    font-weight:800;
+    line-height:1;
+    letter-spacing:-0.5px;
+}
+
+
+/* Upload dashboard brand */
+.dashboard-brand{
+    gap:7px;
+}
+
+.dashboard-brand-icon{
+    width:34px !important;
+    height:34px !important;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    padding:0 !important;
+
+    background:transparent !important;
+    border:none !important;
+    border-radius:0 !important;
+
+    box-shadow:none !important;
+    overflow:visible !important;
+}
+
+.dashboard-brand-icon img{
+    width:32px !important;
+    height:32px !important;
+
+    display:block;
+    object-fit:contain;
+}
+
+
+/* Main footer brand */
+.main-footer-logo{
+    gap:8px;
+}
+
+.main-footer-logo-icon{
+    width:40px !important;
+    height:40px !important;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    padding:0 !important;
+
+    background:transparent !important;
+    border:none !important;
+    border-radius:0 !important;
+
+    box-shadow:none !important;
+    overflow:visible !important;
+}
+
+.main-footer-logo-icon img{
+    width:38px !important;
+    height:38px !important;
+
+    display:block;
+    object-fit:contain;
+}
+
+
+/* Mobile brand sizes */
+@media(max-width:560px){
+
+    .brand{
+        gap:5px;
+    }
+
+    .brand-icon{
+        width:36px !important;
+        height:36px !important;
+    }
+
+    .brand-icon img{
+        width:36px !important;
+        height:36px !important;
+    }
+
+    .brand-name{
+        font-size:20px;
+    }
+
+    .dashboard-brand-icon{
+        width:30px !important;
+        height:30px !important;
+    }
+
+    .dashboard-brand-icon img{
+        width:28px !important;
+        height:28px !important;
+    }
+
+    .main-footer-logo-icon{
+        width:36px !important;
+        height:36px !important;
+    }
+
+    .main-footer-logo-icon img{
+        width:34px !important;
+        height:34px !important;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== FYLOQ BRAND FINAL OVERRIDES END ===== */
 /* ========================================================= */

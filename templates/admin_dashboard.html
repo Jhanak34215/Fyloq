@@ -14,7 +14,18 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>QuickVault Admin Dashboard</title>
+    <meta
+        name="description"
+        content="Fyloq secure administration dashboard."
+    >
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+    >
+
+    <title>Fyloq Admin Dashboard</title>
 
     <!-- ====================================================== -->
     <!-- ===== ADMIN DASHBOARD META END ===== -->
@@ -57,13 +68,18 @@
             <a href="/" class="sidebar-brand">
 
                 <span class="sidebar-brand-icon">
-                    🔒
+
+                    <img
+                        src="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+                        alt="Fyloq"
+                        class="sidebar-logo"
+                    >
                 </span>
 
                 <div>
 
                     <strong>
-                        QuickVault
+                        Fyloq
                     </strong>
 
                     <small>
@@ -107,6 +123,46 @@
                     File Management
 
                 </a>
+                <!-- ================================================== -->
+                <!-- ===== SUPPORT REQUESTS SIDEBAR LINK START ===== -->
+                <!-- ================================================== -->
+
+                    <a
+                        href="{{ url_for('admin_support_requests') }}"
+                        class="sidebar-link"
+                    >
+
+                        <span>
+                        🎧
+                        </span>
+
+                            Support Requests
+
+                            </a>
+                            <!-- ================================================== -->
+                            <!-- ===== ABUSE REPORTS SIDEBAR LINK START ===== -->
+                            <!-- ================================================== -->
+
+                            <a
+                                href="{{ url_for('admin_abuse_reports') }}"
+                                class="sidebar-link"
+                            >
+
+                                <span>
+                                ⚠
+                                </span>
+
+                                    Abuse Reports
+
+                            </a>
+
+                            <!-- ================================================== -->
+                            <!-- ===== ABUSE REPORTS SIDEBAR LINK END ===== -->
+                            <!-- ================================================== -->
+
+                <!-- ================================================== -->
+                <!-- ===== SUPPORT REQUESTS SIDEBAR LINK END ===== -->
+                <!-- ================================================== -->
 
 
                 <a
@@ -207,7 +263,7 @@
                     </h1>
 
                     <p>
-                        Monitor QuickVault files, downloads and storage.
+                        Monitor Fyloq files, downloads and storage.
                     </p>
 
                 </div>
@@ -344,6 +400,70 @@
                     </div>
 
                 </article>
+                    <!-- ================================================== -->
+                    <!-- ===== SUPPORT REQUEST CARD START ===== -->
+                    <!-- ================================================== -->
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-purple">
+                        🎧
+                    </div>
+
+                    <div>
+
+                    <span>
+                        Support Requests
+                    </span>
+
+                        <strong>
+                            {{ total_support_requests }}
+                        </strong>
+
+                    <small>
+                        {{ pending_support_requests }} pending request(s)
+                    </small>
+
+                    </div>
+
+                </article>
+
+                    <!-- ================================================== -->
+                    <!-- ===== SUPPORT REQUEST CARD END ===== -->
+                    <!-- ================================================== -->
+
+
+                    <!-- ================================================== -->
+                    <!-- ===== ABUSE REPORT CARD START ===== -->
+                    <!-- ================================================== -->
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-orange">
+                        ⚠
+                    </div>
+
+                    <div>
+
+                    <span>
+                        Abuse Reports
+                    </span>
+
+                    <strong>
+                        {{ total_abuse_reports }}
+                    </strong>
+
+                    <small>
+                        {{ pending_abuse_reports }} pending report(s)
+                    </small>
+
+                    </div>
+
+                </article>
+
+                <!-- ================================================== -->
+                <!-- ===== ABUSE REPORT CARD END ===== -->
+                <!-- ================================================== -->
 
             </section>
 
@@ -492,10 +612,22 @@
 
                     <div class="admin-quick-actions">
 
+                       
+
                         <form
                             method="POST"
                             action="{{ url_for('admin_cleanup_files') }}"
+                            onsubmit="
+                                return confirm(
+                                    'All expired file records will be permanently deleted. This action cannot be undone. Continue?'
+                                );
+                            "
                         >
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="{{ csrf_token() }}"
+                            >
 
                             <button
                                 type="submit"
@@ -560,7 +692,7 @@
                             <div>
 
                                 <strong>
-                                    Open QuickVault
+                                    Open Fyloq
                                 </strong>
 
                                 <small>
@@ -612,7 +744,7 @@
                         </h2>
 
                         <p>
-                            Search, filter and manage QuickVault file records.
+                            Search, filter and manage Fyloq file records.
                         </p>
 
                     </div>
@@ -826,53 +958,15 @@
 
                                     <td>
 
-                                        <div class="admin-file-name-cell">
+                                        <div class="admin-file-summary">
 
-                                            <div class="admin-file-icon">
+                                            <strong>
+                                                {{ file.original_filename }}
+                                            </strong>
 
-                                                {% if file.file_extension in ["jpg", "jpeg", "png"] %}
-
-                                                    🖼️
-
-                                                {% elif file.file_extension == "pdf" %}
-
-                                                    📕
-
-                                                {% elif file.file_extension in ["doc", "docx", "txt"] %}
-
-                                                    📘
-
-                                                {% elif file.file_extension in ["xls", "xlsx"] %}
-
-                                                    📊
-
-                                                {% elif file.file_extension in ["ppt", "pptx"] %}
-
-                                                    📙
-
-                                                {% elif file.file_extension == "zip" %}
-
-                                                    🗜️
-
-                                                {% else %}
-
-                                                    📄
-
-                                                {% endif %}
-
-                                            </div>
-
-                                            <div>
-
-                                                <strong>
-                                                    {{ file.original_filename }}
-                                                </strong>
-
-                                                <span>
-                                                    {{ file.file_extension|upper }}
-                                                </span>
-
-                                            </div>
+                                            <small>
+                                                {{ file.file_extension|upper }}
+                                            </small>
 
                                         </div>
 
@@ -943,28 +1037,63 @@
                                     <!-- ===== STATUS CELL END ===== -->
 
 
-                                    <!-- ===== DELETE ACTION CELL START ===== -->
+                                    <!-- ===== FILE ACTION CELL START ===== -->
 
                                     <td>
 
-                                        <form
-                                            method="POST"
-                                            action="{{ url_for('admin_delete_file', file_id=file.id) }}"
-                                            onsubmit="return confirm('Delete this file permanently?');"
-                                        >
+                                        <div class="admin-file-actions">
 
-                                            <button
-                                                type="submit"
-                                                class="admin-delete-button"
+                                            {% if file.status == "active" %}
+
+                                                <form
+                                                    method="POST"
+                                                    action="{{ url_for('admin_expire_file', file_id=file.id) }}"
+                                                    onsubmit="return confirm('Expire this file?');"
+                                                >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="csrf_token"
+                                                        value="{{ csrf_token() }}"
+                                                    >
+
+                                                    <button
+                                                        type="submit"
+                                                        class="admin-expire-button"
+                                                    >
+                                                        Expire
+                                                    </button>
+
+                                                </form>
+
+                                            {% endif %}
+
+                                            <form
+                                                method="POST"
+                                                action="{{ url_for('admin_delete_file', file_id=file.id) }}"
+                                                onsubmit="return confirm('Delete this file permanently?');"
                                             >
-                                                Delete
-                                            </button>
 
-                                        </form>
+                                                <input
+                                                    type="hidden"
+                                                    name="csrf_token"
+                                                    value="{{ csrf_token() }}"
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="admin-delete-button"
+                                                >
+                                                    Delete
+                                                </button>
+
+                                            </form>
+
+                                        </div>
 
                                     </td>
 
-                                    <!-- ===== DELETE ACTION CELL END ===== -->
+                                    <!-- ===== FILE ACTION CELL END ===== -->
 
                                 </tr>
 
@@ -1029,11 +1158,18 @@
             <footer class="admin-dashboard-footer">
 
                 <p>
-                    QuickVault Admin Dashboard
+                    Fyloq Admin Dashboard
                 </p>
 
                 <span>
-                    Developed by Jhanak Uprade
+                    Developed by
+                    <a
+                        href="https://portfolio-cms-cbqe.onrender.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Jhanak Uprade
+                    </a>
                 </span>
 
             </footer>

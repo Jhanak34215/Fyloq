@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Fyloq encountered an unexpected server error."
+    >
+
+    <title>Server Error | Fyloq</title>
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/error.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <main class="error-page">
+
+        <section class="error-card">
+
+            <a
+                href="/"
+                class="error-brand"
+                aria-label="Go to Fyloq home page"
+            >
+
+                <img
+                    src="{{ url_for('static', filename='images/fyloq-logo.svg') }}"
+                    alt="Fyloq"
+                    style="width: 150px; height: auto; display: block;"
+                >
+
+            </a>
+
+            <div class="error-code">
+                500
+            </div>
+
+            <span class="error-label">
+                SERVER ERROR
+            </span>
+
+            <h1>
+                Something went wrong
+            </h1>
+
+            <p>
+
+                Fyloq encountered an unexpected error while
+                processing your request. Please try again shortly.
+
+            </p>
+
+            <div class="error-actions">
+
+                <a
+                    href="/"
+                    class="error-primary-button"
+                >
+                    Go to Home
+                </a>
+
+                <button
+                    type="button"
+                    class="error-secondary-button"
+                    onclick="window.location.reload()"
+                >
+                    Try Again
+                </button>
+
+            </div>
+
+            <div class="error-help">
+
+                Still facing the problem?
+
+                <a href="/support">
+                    Contact Support
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

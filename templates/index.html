@@ -12,7 +12,26 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>QuickVault - Secure File Sharing</title>
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+    >
+
+    <title>Fyloq - Secure File Sharing</title>
+
+        <!-- ====================================================== -->
+    <!-- ===== AJAX CSRF TOKEN START ===== -->
+    <!-- ====================================================== -->
+
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
+
+    <!-- ====================================================== -->
+    <!-- ===== AJAX CSRF TOKEN END ===== -->
+    <!-- ====================================================== -->
 
     <!-- ===== BASIC META END ===== -->
 
@@ -61,11 +80,20 @@
         <a href="/" class="brand">
 
             <span class="brand-icon">
-                🔒
+
+                <img
+                    src="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+                    alt=""
+                    aria-hidden="true"
+                    width="40"
+                    height="40"
+                    style="display:block; width:40px; height:40px; object-fit:contain;"
+                >
+
             </span>
 
             <span class="brand-name">
-                QuickVault
+                Fyloq
             </span>
 
         </a>
@@ -387,11 +415,20 @@
                     <div class="dashboard-brand">
 
                         <span class="dashboard-brand-icon">
-                            🔒
+
+                            <img
+                                src="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+                                alt=""
+                                aria-hidden="true"
+                                width="32"
+                                height="32"
+                                style="display:block; width:32px; height:32px; object-fit:contain;"
+                            >
+
                         </span>
 
                         <span>
-                            QuickVault
+                            Fyloq
                         </span>
 
                     </div>
@@ -592,16 +629,47 @@
                                         Optional PIN
                                     </label>
 
-                                    <input
-                                        type="password"
-                                        id="filePin"
-                                        maxlength="4"
-                                        inputmode="numeric"
-                                        placeholder="4-digit PIN"
-                                    >
+                                        <input
+                                            type="password"
+                                            id="filePin"
+                                            maxlength="4"
+                                            inputmode="numeric"
+                                            placeholder="4-digit PIN"
+                                            autocomplete="off"
+                                        >
+
+                                        <!-- ==================================================== -->
+                                        <!-- ===== PIN SECURITY WARNING START ===== -->
+                                        <!-- ==================================================== -->
+
+                                        <div
+                                            id="pinSecurityWarning"
+                                            class="pin-security-warning"
+                                            role="alert"
+                                            hidden
+                                        >
+
+                                        <span class="pin-warning-icon">
+                                            ⚠
+                                        </span>
+
+                                        <p>
+                                            <strong>
+                                                Important: Save your PIN securely.
+                                            </strong>
+
+                                            <span>
+                                                Fyloq cannot recover or reset a forgotten PIN.
+                                            </span>
+                                        </p>
+
+                                    </div>
+
+                                        <!-- ==================================================== -->
+                                        <!-- ===== PIN SECURITY WARNING END ===== -->
+                                        <!-- ==================================================== -->
 
                                 </div>
-
                             </div>
 
                             <!-- ===== UPLOAD SETTINGS END ===== -->
@@ -770,7 +838,7 @@
 
                     <p>
 
-                        QuickVault generates a secure access code and
+                        Fyloq generates a secure access code and
                         optional PIN.
 
                     </p>
@@ -794,7 +862,7 @@
 
                     <p>
 
-                        Open QuickVault on another device and retrieve
+                        Open Fyloq on another device and retrieve
                         your file securely.
 
                     </p>
@@ -811,43 +879,168 @@
 
 
     <!-- ====================================================== -->
-    <!-- ===== FOOTER START ===== -->
-    <!-- ====================================================== -->
+<!-- ===== PROFESSIONAL FOOTER START ===== -->
+<!-- ====================================================== -->
 
-        <footer class="footer">
+<footer class="main-footer">
 
-            <div class="footer-brand">
+    <div class="main-footer-grid">
 
-                <span class="brand-icon">
-                    🔒
+        <!-- ===== FOOTER BRAND START ===== -->
+
+        <div class="main-footer-brand">
+
+            <a href="/" class="main-footer-logo">
+
+                <span class="main-footer-logo-icon">
+
+                    <img
+                        src="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+                        alt=""
+                        aria-hidden="true"
+                        width="38"
+                        height="38"
+                        style="display:block; width:38px; height:38px; object-fit:contain;"
+                    >
+
                 </span>
 
-                <div>
+                <strong>
+                    Fyloq
+                </strong>
 
-                    <strong>
-                        QuickVault
-                    </strong>
+            </a>
 
-                    <p>
-                        Secure temporary file sharing.
-                    </p>
+            <p>
 
-                </div>
-
-            </div>
-
-
-            <p class="footer-copyright">
-
-                © 2026 QuickVault. Developed by Jhanak Uprade.
+                Secure temporary file sharing with access-code,
+                optional PIN protection and automatic expiry.
 
             </p>
 
-        </footer>
+        </div>
 
-    <!-- ====================================================== -->
-    <!-- ===== FOOTER END ===== -->
-    <!-- ====================================================== -->
+        <!-- ===== FOOTER BRAND END ===== -->
+
+
+        <!-- ===== PLATFORM LINKS START ===== -->
+
+        <div class="main-footer-column">
+
+            <h4>
+                Platform
+            </h4>
+
+            <a href="/">
+                Home
+            </a>
+
+            <a href="/#upload">
+                Upload File
+            </a>
+
+            <a href="/#how-it-works">
+                How It Works
+            </a>
+
+            <a href="/support">
+                Support
+            </a>
+
+        </div>
+
+        <!-- ===== PLATFORM LINKS END ===== -->
+
+
+        <!-- ===== LEGAL LINKS START ===== -->
+
+        <div class="main-footer-column">
+
+            <h4>
+                Legal
+            </h4>
+
+            <a href="/privacy">
+                Privacy Policy
+            </a>
+
+            <a href="/terms">
+                Terms & Conditions
+            </a>
+
+            <a href="/legal">
+                Legal Notice
+            </a>
+
+            <a href="/report-abuse">
+                Report Abuse
+            </a>
+
+        </div>
+
+        <!-- ===== LEGAL LINKS END ===== -->
+
+
+        <!-- ===== CONTACT START ===== -->
+
+        <div class="main-footer-column">
+
+            <h4>
+                Contact
+            </h4>
+
+            <a href="mailto:quickvault.help@gmail.com">
+                quickvault.help@gmail.com
+            </a>
+
+            <span>
+                Response target: within 24 hours
+            </span>
+
+            <span>
+                India
+            </span>
+
+        </div>
+
+        <!-- ===== CONTACT END ===== -->
+
+    </div>
+
+
+    <!-- ===== FOOTER BOTTOM START ===== -->
+
+    <div class="main-footer-bottom">
+
+        <p>
+            © 2026 Fyloq. All rights reserved.
+        </p>
+
+        <div class="main-footer-developer">
+
+            <span>
+                Developed by
+            </span>
+
+            <a
+                href="https://portfolio-cms-cbqe.onrender.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Jhanak Uprade
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- ===== FOOTER BOTTOM END ===== -->
+
+</footer>
+
+<!-- ====================================================== -->
+<!-- ===== PROFESSIONAL FOOTER END ===== -->
+<!-- ====================================================== -->
 
     </main>
 <!-- ====================================================== -->
@@ -973,7 +1166,7 @@
             id="successQrCode"
             class="success-qr-image"
             src=""
-            alt="QuickVault access QR code"
+            alt="Fyloq file access QR code"
         >
 
         <small>
@@ -1076,7 +1269,7 @@
 
             <p>
 
-                QuickVault does not permanently store your access
+                Fyloq does not permanently store your access
                 code. Save it before closing this window.
 
             </p>
@@ -1289,7 +1482,7 @@
 
         <p class="file-ready-description">
 
-            QuickVault successfully verified your access
+            Fyloq successfully verified your access
             code and PIN.
 
         </p>

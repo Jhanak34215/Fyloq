@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN SUPPORT META START ===== -->
+    <!-- ====================================================== -->
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Support Requests | QuickVault Admin</title>
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN SUPPORT META END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN CSS START ===== -->
+    <!-- ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin.css') }}"
+    >
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN CSS END ===== -->
+    <!-- ====================================================== -->
+
+</head>
+
+<body class="admin-dashboard-body">
+
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN SUPPORT LAYOUT START ===== -->
+    <!-- ====================================================== -->
+
+    <div class="admin-dashboard-layout">
+
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN SIDEBAR START ===== -->
+        <!-- ================================================== -->
+
+        <aside class="admin-sidebar">
+
+            <!-- ===== SIDEBAR BRAND START ===== -->
+
+            <a href="/" class="sidebar-brand">
+
+                <span class="sidebar-brand-icon">
+                    🔒
+                </span>
+
+                <div>
+
+                    <strong>
+                        QuickVault
+                    </strong>
+
+                    <small>
+                        Admin Panel
+                    </small>
+
+                </div>
+
+            </a>
+
+            <!-- ===== SIDEBAR BRAND END ===== -->
+
+
+            <!-- ===== SIDEBAR NAVIGATION START ===== -->
+
+            <nav class="sidebar-navigation">
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="sidebar-link"
+                >
+
+                    <span>
+                        ▦
+                    </span>
+
+                    Dashboard
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}#files-section"
+                    class="sidebar-link"
+                >
+
+                    <span>
+                        📁
+                    </span>
+
+                    File Management
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_support_requests') }}"
+                    class="sidebar-link active"
+                >
+
+                    <span>
+                        🎧
+                    </span>
+
+                    Support Requests
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}#storage-section"
+                    class="sidebar-link"
+                >
+
+                    <span>
+                        💾
+                    </span>
+
+                    Storage
+
+                </a>
+
+            </nav>
+
+            <!-- ===== SIDEBAR NAVIGATION END ===== -->
+
+
+            <!-- ===== SIDEBAR FOOTER START ===== -->
+
+            <div class="sidebar-footer">
+
+                <a
+                    href="/support"
+                    class="sidebar-secondary-link"
+                >
+
+                    <span>
+                        ?
+                    </span>
+
+                    View Support Page
+
+                </a>
+
+
+                <a
+                    href="/"
+                    class="sidebar-secondary-link"
+                >
+
+                    <span>
+                        ←
+                    </span>
+
+                    View Website
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_logout') }}"
+                    class="sidebar-logout-link"
+                >
+
+                    <span>
+                        ⇥
+                    </span>
+
+                    Logout
+
+                </a>
+
+            </div>
+
+            <!-- ===== SIDEBAR FOOTER END ===== -->
+
+        </aside>
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN SIDEBAR END ===== -->
+        <!-- ================================================== -->
+
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN MAIN CONTENT START ===== -->
+        <!-- ================================================== -->
+
+        <main class="admin-main-content">
+
+
+            <!-- ================================================== -->
+            <!-- ===== SUPPORT PAGE TOPBAR START ===== -->
+            <!-- ================================================== -->
+
+            <header class="admin-topbar">
+
+                <div>
+
+                    <span class="admin-page-label">
+                        CUSTOMER SUPPORT
+                    </span>
+
+                    <h1>
+                        Support Requests
+                    </h1>
+
+                    <p>
+                        Review and manage user support requests.
+                    </p>
+
+                </div>
+
+
+                <div class="admin-topbar-actions">
+
+                    <button
+                        type="button"
+                        class="admin-refresh-button"
+                        onclick="window.location.reload()"
+                    >
+                        ↻ Refresh
+                    </button>
+
+
+                    <a
+                        href="{{ url_for('admin_dashboard') }}"
+                        class="admin-topbar-logout"
+                    >
+                        Dashboard
+                    </a>
+
+                </div>
+
+            </header>
+
+            <!-- ================================================== -->
+            <!-- ===== SUPPORT PAGE TOPBAR END ===== -->
+            <!-- ================================================== -->
+
+
+            <!-- ================================================== -->
+            <!-- ===== SUPPORT STATISTICS START ===== -->
+            <!-- ================================================== -->
+
+            <section class="admin-statistics-grid">
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-purple">
+                        🎧
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Total Requests
+                        </span>
+
+                        <strong>
+                            {{ total_requests }}
+                        </strong>
+
+                        <small>
+                            All support tickets
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-orange">
+                        ⏱
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Pending
+                        </span>
+
+                        <strong>
+                            {{ pending_requests }}
+                        </strong>
+
+                        <small>
+                            Waiting for review
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-green">
+                        ✓
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Solved
+                        </span>
+
+                        <strong>
+                            {{ solved_requests }}
+                        </strong>
+
+                        <small>
+                            Successfully resolved
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="admin-stat-card">
+
+                    <div class="stat-card-icon stat-blue">
+                        ×
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Closed
+                        </span>
+
+                        <strong>
+                            {{ closed_requests }}
+                        </strong>
+
+                        <small>
+                            Closed support tickets
+                        </small>
+
+                    </div>
+
+                </article>
+
+            </section>
+
+            <!-- ================================================== -->
+            <!-- ===== SUPPORT STATISTICS END ===== -->
+            <!-- ================================================== -->
+
+
+            <!-- ================================================== -->
+            <!-- ===== SUPPORT REQUESTS PANEL START ===== -->
+            <!-- ================================================== -->
+
+            <section class="admin-files-section">
+
+                <!-- ===== SUPPORT HEADER START ===== -->
+
+                <div class="files-section-header">
+
+                    <div>
+
+                        <span class="admin-page-label">
+                            REQUEST MANAGEMENT
+                        </span>
+
+                        <h2>
+                            User Support Tickets
+                        </h2>
+
+                        <p>
+                            Search tickets and filter them by status.
+                        </p>
+
+                    </div>
+
+
+                    <!-- ===== SUPPORT SEARCH FORM START ===== -->
+
+                    <form
+                        method="GET"
+                        action="{{ url_for('admin_support_requests') }}"
+                        class="admin-search-form"
+                    >
+
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ search_query }}"
+                            placeholder="Search ticket, name, email or code"
+                        >
+
+
+                        <select name="status">
+
+                            <option
+                                value="all"
+                                {% if status_filter == "all" %}
+                                    selected
+                                {% endif %}
+                            >
+                                All Status
+                            </option>
+
+                            <option
+                                value="pending"
+                                {% if status_filter == "pending" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Pending
+                            </option>
+
+                            <option
+                                value="solved"
+                                {% if status_filter == "solved" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Solved
+                            </option>
+
+                            <option
+                                value="closed"
+                                {% if status_filter == "closed" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Closed
+                            </option>
+
+                        </select>
+
+
+                        <button type="submit">
+                            Search
+                        </button>
+
+
+                        {% if search_query or status_filter != "all" %}
+
+                            <a
+                                href="{{ url_for('admin_support_requests') }}"
+                                class="admin-clear-filter"
+                            >
+                                Clear
+                            </a>
+
+                        {% endif %}
+
+                    </form>
+
+                    <!-- ===== SUPPORT SEARCH FORM END ===== -->
+
+                </div>
+
+                <!-- ===== SUPPORT HEADER END ===== -->
+
+
+                <!-- ===== DASHBOARD MESSAGE START ===== -->
+
+                {% if message %}
+
+                    <div class="admin-dashboard-message">
+                        {{ message }}
+                    </div>
+
+                {% endif %}
+
+                <!-- ===== DASHBOARD MESSAGE END ===== -->
+
+
+                <!-- ================================================== -->
+                <!-- ===== SUPPORT REQUEST CARDS START ===== -->
+                <!-- ================================================== -->
+
+                <div class="admin-support-list">
+
+                    {% for support in support_requests %}
+
+                        <article class="admin-support-card">
+
+                            <!-- ===== TICKET HEADER START ===== -->
+
+                            <div class="admin-support-card-header">
+
+                                <div>
+
+                                    <span class="admin-support-ticket">
+                                        {{ support.ticket_id }}
+                                    </span>
+
+                                    <h3>
+                                        {{ support.subject }}
+                                    </h3>
+
+                                </div>
+
+
+                                <span
+                                    class="
+                                        admin-status-badge
+                                        support-status-{{ support.status }}
+                                    "
+                                >
+                                    {{ support.status }}
+                                </span>
+
+                            </div>
+
+                            <!-- ===== TICKET HEADER END ===== -->
+
+
+                            <!-- ===== USER INFORMATION START ===== -->
+
+                            <div class="admin-support-user-grid">
+
+                                <div>
+
+                                    <span>
+                                        Name
+                                    </span>
+
+                                    <strong>
+                                        {{ support.name }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Email
+                                    </span>
+
+                                    <a
+                                        href="mailto:{{ support.email }}"
+                                    >
+                                        {{ support.email }}
+                                    </a>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Access Code
+                                    </span>
+
+                                    <strong>
+
+                                        {% if support.access_code %}
+
+                                            {{ support.access_code }}
+
+                                        {% else %}
+
+                                            Not provided
+
+                                        {% endif %}
+
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Problem Type
+                                    </span>
+
+                                    <strong>
+                                        {{ support.formatted_problem_type }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Submitted
+                                    </span>
+
+                                    <strong>
+                                        {{ support.formatted_created_at }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ===== USER INFORMATION END ===== -->
+
+
+                            <!-- ===== SUPPORT MESSAGE START ===== -->
+
+                            <div class="admin-support-message-box">
+
+                                <span>
+                                    USER MESSAGE
+                                </span>
+
+                                <p>
+                                    {{ support.message }}
+                                </p>
+
+                            </div>
+
+                            <!-- ===== SUPPORT MESSAGE END ===== -->
+
+
+                            <!-- ===== SUPPORT ACTIONS START ===== -->
+
+                            <div class="admin-support-actions">
+
+                                <a
+                                    href="mailto:{{ support.email }}?subject=Re:%20{{ support.ticket_id }}%20-%20{{ support.subject }}"
+                                    class="admin-support-email-button"
+                                >
+                                    ✉ Reply by Email
+                                </a>
+
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for('admin_update_support_status', request_id=support.id) }}"
+                                    class="admin-support-status-form"
+                                >
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    value="{{ csrf_token() }}"
+                                    >
+
+                                    <select name="status">
+
+                                        <option
+                                            value="pending"
+                                            {% if support.status == "pending" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Pending
+                                        </option>
+
+                                        <option
+                                            value="solved"
+                                            {% if support.status == "solved" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Solved
+                                        </option>
+
+                                        <option
+                                            value="closed"
+                                            {% if support.status == "closed" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Closed
+                                        </option>
+
+                                    </select>
+
+
+                                    <button type="submit">
+                                        Update Status
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                            <!-- ===== SUPPORT ACTIONS END ===== -->
+
+                        </article>
+
+                    {% else %}
+
+                        <!-- ===== EMPTY SUPPORT STATE START ===== -->
+
+                        <div class="admin-support-empty">
+
+                            <div>
+                                🎧
+                            </div>
+
+                            <strong>
+                                No support requests found
+                            </strong>
+
+                            <p>
+
+                                {% if search_query or status_filter != "all" %}
+
+                                    No tickets match the selected search or filter.
+
+                                {% else %}
+
+                                    New user support requests will appear here.
+
+                                {% endif %}
+
+                            </p>
+
+                        </div>
+
+                        <!-- ===== EMPTY SUPPORT STATE END ===== -->
+
+                    {% endfor %}
+
+                </div>
+
+                <!-- ================================================== -->
+                <!-- ===== SUPPORT REQUEST CARDS END ===== -->
+                <!-- ================================================== -->
+
+            </section>
+
+            <!-- ================================================== -->
+            <!-- ===== SUPPORT REQUESTS PANEL END ===== -->
+            <!-- ================================================== -->
+
+
+            <!-- ===== ADMIN FOOTER START ===== -->
+
+            <footer class="admin-dashboard-footer">
+
+                <p>
+                    QuickVault Support Management
+                </p>
+
+                <span>
+                    Support Email: quickvault.help@gmail.com
+                </span>
+
+            </footer>
+
+            <!-- ===== ADMIN FOOTER END ===== -->
+
+        </main>
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN MAIN CONTENT END ===== -->
+        <!-- ================================================== -->
+
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- ===== ADMIN SUPPORT LAYOUT END ===== -->
+    <!-- ====================================================== -->
+
+</body>
+
+</html>

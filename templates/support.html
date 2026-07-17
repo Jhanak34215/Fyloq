@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT PAGE META START ===== -->
+    <!-- ====================================================== -->
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+    >
+
+    <meta
+        name="description"
+        content="Contact Fyloq support for file access, PIN, download and other technical issues."
+    >
+
+    <title>Support | Fyloq</title>
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT PAGE META END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== GOOGLE FONT START ===== -->
+    <!-- ====================================================== -->
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- ====================================================== -->
+    <!-- ===== GOOGLE FONT END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT PAGE CSS START ===== -->
+    <!-- ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/support.css') }}"
+    >
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT PAGE CSS END ===== -->
+    <!-- ====================================================== -->
+
+</head>
+
+<body>
+
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT NAVBAR START ===== -->
+    <!-- ====================================================== -->
+
+    <header class="support-navbar">
+
+        <a
+            href="/"
+            class="support-brand"
+        >
+
+            <img
+                src="{{ url_for('static', filename='images/fyloq-logo.svg') }}"
+                alt="Fyloq"
+                style="width: 142px; height: auto; display: block;"
+            >
+
+        </a>
+
+
+        <nav class="support-nav-links">
+
+            <a href="/">
+                Home
+            </a>
+
+            <a
+                href="/support"
+                class="active"
+            >
+                Support
+            </a>
+
+            <a href="/privacy">
+                Privacy
+            </a>
+
+            <a href="/terms">
+                Terms
+            </a>
+
+            <a href="/legal">
+                Legal
+            </a>
+
+        </nav>
+
+
+        <a
+            href="/"
+            class="support-home-button"
+        >
+            Open Fyloq
+        </a>
+
+    </header>
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT NAVBAR END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT HERO START ===== -->
+    <!-- ====================================================== -->
+
+    <section class="support-hero">
+
+        <span class="support-page-label">
+            FYLOQ SUPPORT
+        </span>
+
+        <h1>
+            How can we help you?
+        </h1>
+
+        <p>
+
+            Submit your problem using the form below.
+            Our support team will review your request and
+            contact you using the email address you provide.
+
+        </p>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT HERO END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT MAIN SECTION START ===== -->
+    <!-- ====================================================== -->
+
+    <main class="support-main">
+
+
+        <!-- ================================================== -->
+        <!-- ===== SUPPORT FORM CARD START ===== -->
+        <!-- ================================================== -->
+
+        <section class="support-form-card">
+
+            <div class="support-card-heading">
+
+                <div class="support-heading-icon">
+                    🎧
+                </div>
+
+                <div>
+
+                    <span>
+                        SUPPORT REQUEST
+                    </span>
+
+                    <h2>
+                        Tell us about your problem
+                    </h2>
+
+                    <p>
+                        Fields marked with * are required.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- ===== SUPPORT SUCCESS MESSAGE START ===== -->
+
+            {% if success_message %}
+
+                <div class="support-message support-success">
+
+                    <span>
+                        ✓
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Request submitted
+                        </strong>
+
+                        <p>
+                            {{ success_message }}
+                        </p>
+
+                        {% if ticket_id %}
+
+                            <small>
+
+                                Ticket ID:
+
+                                <b>
+                                    {{ ticket_id }}
+                                </b>
+
+                            </small>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+            <!-- ===== SUPPORT SUCCESS MESSAGE END ===== -->
+
+
+            <!-- ===== SUPPORT ERROR MESSAGE START ===== -->
+
+            {% if error_message %}
+
+                <div class="support-message support-error">
+
+                    <span>
+                        !
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Unable to submit request
+                        </strong>
+
+                        <p>
+                            {{ error_message }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+            <!-- ===== SUPPORT ERROR MESSAGE END ===== -->
+
+
+            <!-- ================================================== -->
+            <!-- ===== SUPPORT FORM START ===== -->
+            <!-- ================================================== -->
+
+            <form
+                method="POST"
+                action="/support"
+                class="support-form"
+                id="supportForm"
+            >
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+                <!-- ===== NAME AND EMAIL ROW START ===== -->
+
+                <div class="support-form-grid">
+
+                    <div class="support-form-group">
+
+                        <label for="supportName">
+                            Your Name *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="supportName"
+                            name="name"
+                            maxlength="80"
+                            placeholder="Enter your full name"
+                            required
+                            autocomplete="name"
+                        >
+
+                    </div>
+
+
+                    <div class="support-form-group">
+
+                        <label for="supportEmail">
+                            Email Address *
+                        </label>
+
+                        <input
+                            type="email"
+                            id="supportEmail"
+                            name="email"
+                            maxlength="120"
+                            placeholder="Enter your email address"
+                            required
+                            autocomplete="email"
+                        >
+
+                    </div>
+
+                </div>
+
+                <!-- ===== NAME AND EMAIL ROW END ===== -->
+
+
+                <!-- ===== ACCESS CODE START ===== -->
+
+                <div class="support-form-group">
+
+                    <label for="supportAccessCode">
+                        Fyloq Access Code
+                    </label>
+
+                    <input
+                        type="text"
+                        id="supportAccessCode"
+                        name="access_code"
+                        maxlength="6"
+                        inputmode="numeric"
+                        pattern="[0-9]{6}"
+                        placeholder="Enter 6-digit access code, if available"
+                    >
+
+                    <small>
+                        Access code is optional, but it helps us identify the file issue.
+                    </small>
+
+                </div>
+
+                <!-- ===== ACCESS CODE END ===== -->
+
+
+                <!-- ===== PROBLEM TYPE START ===== -->
+
+                <div class="support-form-group">
+
+                    <label for="supportProblemType">
+                        Problem Type *
+                    </label>
+
+                    <select
+                        id="supportProblemType"
+                        name="problem_type"
+                        required
+                    >
+
+                        <option value="">
+                            Select your problem
+                        </option>
+<option value="access_code_not_working">
+                            Access code is not working
+                        </option>
+
+                        <option value="download_problem">
+                            File download problem
+                        </option>
+
+                        <option value="upload_problem">
+                            File upload problem
+                        </option>
+
+                        <option value="expired_file">
+                            File expired or unavailable
+                        </option>
+
+                        <option value="wrong_file">
+                            Wrong or suspicious file
+                        </option>
+
+                        <option value="technical_problem">
+                            Website technical problem
+                        </option>
+
+                        <option value="other">
+                            Other problem
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- ===== PROBLEM TYPE END ===== -->
+
+
+                <!-- ===== SUBJECT START ===== -->
+
+                <div class="support-form-group">
+
+                    <label for="supportSubject">
+                        Subject *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="supportSubject"
+                        name="subject"
+                        maxlength="150"
+                        placeholder="Write a short title for your problem"
+                        required
+                    >
+
+                </div>
+
+                <!-- ===== SUBJECT END ===== -->
+
+
+                <!-- ===== PROBLEM DESCRIPTION START ===== -->
+
+                <div class="support-form-group">
+
+                    <label for="supportMessage">
+                        Describe Your Problem *
+                    </label>
+
+                    <textarea
+                        id="supportMessage"
+                        name="message"
+                        maxlength="2000"
+                        rows="7"
+                        placeholder="Explain what happened, what you tried and what error you are seeing..."
+                        required
+                    ></textarea>
+
+                    <div class="support-textarea-information">
+
+                        <small>
+                            Do not include your PIN, password or other sensitive information.
+                        </small>
+
+                        <small id="supportCharacterCount">
+                            0 / 2000
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <!-- ===== PROBLEM DESCRIPTION END ===== -->
+
+
+                <!-- ===== SUPPORT CONSENT START ===== -->
+
+                <label class="support-consent">
+
+                    <input
+                        type="checkbox"
+                        name="support_consent"
+                        value="yes"
+                        required
+                    >
+
+                    <span class="support-custom-checkbox"></span>
+
+                    <span>
+
+                        I confirm that the information provided is correct
+                        and I agree that Fyloq may use it to handle
+                        this support request.
+
+                    </span>
+
+                </label>
+
+                <!-- ===== SUPPORT CONSENT END ===== -->
+
+
+                <!-- ===== SUBMIT BUTTON START ===== -->
+
+                <button
+                    type="submit"
+                    class="support-submit-button"
+                    id="supportSubmitButton"
+                >
+
+                    <span>
+                        ✉
+                    </span>
+
+                    Submit Support Request
+
+                </button>
+
+                <!-- ===== SUBMIT BUTTON END ===== -->
+
+            </form>
+
+            <!-- ================================================== -->
+            <!-- ===== SUPPORT FORM END ===== -->
+            <!-- ================================================== -->
+
+        </section>
+
+        <!-- ================================================== -->
+        <!-- ===== SUPPORT FORM CARD END ===== -->
+        <!-- ================================================== -->
+
+
+        <!-- ================================================== -->
+        <!-- ===== SUPPORT INFORMATION START ===== -->
+        <!-- ================================================== -->
+
+        <aside class="support-information">
+
+
+            <!-- ===== SUPPORT EMAIL CARD START ===== -->
+
+            <article class="support-information-card support-email-card">
+
+                <div class="support-information-icon">
+                    ✉
+                </div>
+
+                <span>
+                    SUPPORT EMAIL
+                </span>
+
+                <h3>
+                    Contact us directly
+                </h3>
+
+                <p>
+
+                    You can also send your problem directly
+                    to our support email address.
+
+                </p>
+
+                <a
+                    href="mailto:fyloq.help@gmail.com"
+                    class="support-email-link"
+                    id="supportEmailLink"
+                >
+                    fyloq.help@gmail.com
+                </a>
+
+                <button
+                    type="button"
+                    class="support-copy-email"
+                    id="copySupportEmail"
+                >
+                    Copy Email Address
+                </button>
+
+                <small
+                    class="support-copy-status"
+                    id="supportCopyStatus"
+                ></small>
+
+            </article>
+
+            <!-- ===== SUPPORT EMAIL CARD END ===== -->
+
+
+            <!-- ===== RESPONSE TIME CARD START ===== -->
+
+            <article class="support-information-card">
+
+                <div class="support-information-icon">
+                    ⏱
+                </div>
+
+                <span>
+                    RESPONSE TIME
+                </span>
+
+                <h3>
+                    Within 24 hours
+                </h3>
+
+                <p>
+
+                    Most support requests are reviewed within
+                    24 hours. Complex or legal matters may
+                    require additional time.
+
+                </p>
+
+            </article>
+
+            <!-- ===== RESPONSE TIME CARD END ===== -->
+
+
+            <!-- ===== SECURITY WARNING CARD START ===== -->
+
+            <article class="support-information-card support-warning-card">
+
+                <div class="support-information-icon">
+                    🛡️
+                </div>
+
+                <span>
+                    SECURITY NOTICE
+                </span>
+
+                <h3>
+                    Never share your PIN
+                </h3>
+
+                <p>
+
+                    Save your PIN securely. Fyloq cannot recover
+                    or reset a forgotten PIN. Never share your PIN
+                    or other sensitive information.
+
+                </p>
+
+            </article>
+
+            <!-- ===== SECURITY WARNING CARD END ===== -->
+
+
+            <!-- ===== COMMON HELP CARD START ===== -->
+
+            <article class="support-information-card">
+
+                <div class="support-information-icon">
+                    ?
+                </div>
+
+                <span>
+                    BEFORE SUBMITTING
+                </span>
+
+                <h3>
+                    Try these quick checks
+                </h3>
+
+                <ul class="support-check-list">
+
+                    <li>
+                        Check that the access code contains exactly 6 digits.
+                    </li>
+
+                    <li>
+                        Confirm that the file has not expired.
+                    </li>
+
+                    <li>
+                        Check whether the file was one-time download only.
+                    </li>
+
+                    <li>
+                        Refresh the page and try using another browser.
+                    </li>
+
+                </ul>
+
+            </article>
+
+            <!-- ===== COMMON HELP CARD END ===== -->
+
+        </aside>
+
+        <!-- ================================================== -->
+        <!-- ===== SUPPORT INFORMATION END ===== -->
+        <!-- ================================================== -->
+
+    </main>
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT MAIN SECTION END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT FOOTER START ===== -->
+    <!-- ====================================================== -->
+
+    <footer class="support-footer">
+
+        <div class="support-footer-grid">
+
+            <div class="support-footer-brand">
+
+                <a href="/">
+
+                    <img
+                        src="{{ url_for('static', filename='images/fyloq-logo.svg') }}"
+                        alt="Fyloq"
+                        style="width: 150px; height: auto; display: block;"
+                    >
+
+                </a>
+
+                <p>
+
+                    Secure temporary file sharing with
+                    access-code and PIN protection.
+
+                </p>
+
+            </div>
+
+
+            <div class="support-footer-column">
+
+                <h4>
+                    Quick Links
+                </h4>
+
+                <a href="/">
+                    Home
+                </a>
+
+                <a href="/support">
+                    Support
+                </a>
+
+                <a href="/contact">
+                    Contact
+                </a>
+
+            </div>
+
+
+            <div class="support-footer-column">
+
+                <h4>
+                    Legal
+                </h4>
+
+                <a href="/privacy">
+                    Privacy Policy
+                </a>
+
+                <a href="/terms">
+                    Terms & Conditions
+                </a>
+
+                <a href="/legal">
+                    Legal Notice
+                </a>
+
+                <a href="/report-abuse">
+                    Report Abuse
+                </a>
+
+            </div>
+
+
+            <div class="support-footer-column">
+
+                <h4>
+                    Contact
+                </h4>
+
+                <a href="mailto:fyloq.help@gmail.com">
+                    fyloq.help@gmail.com
+                </a>
+
+                <span>
+                    Response within 24 hours
+                </span>
+
+                <span>
+                    India
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="support-footer-bottom">
+
+            <p>
+                © 2026 Fyloq. All rights reserved.
+            </p>
+
+            <p>
+
+                By using Fyloq, you agree to our
+                Terms & Conditions and Privacy Policy.
+
+            </p>
+
+        </div>
+
+    </footer>
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT FOOTER END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT PAGE JAVASCRIPT START ===== -->
+    <!-- ====================================================== -->
+
+    <script>
+
+        /* ===== SUPPORT CHARACTER COUNTER START ===== */
+
+        const supportMessage =
+            document.getElementById(
+                "supportMessage"
+            );
+
+        const supportCharacterCount =
+            document.getElementById(
+                "supportCharacterCount"
+            );
+
+        supportMessage.addEventListener(
+            "input",
+            function () {
+
+                supportCharacterCount.textContent =
+                    supportMessage.value.length
+                    +
+                    " / 2000";
+
+            }
+        );
+
+        /* ===== SUPPORT CHARACTER COUNTER END ===== */
+
+
+        /* ===== COPY SUPPORT EMAIL START ===== */
+
+        const copySupportEmail =
+            document.getElementById(
+                "copySupportEmail"
+            );
+
+        const supportCopyStatus =
+            document.getElementById(
+                "supportCopyStatus"
+            );
+
+        copySupportEmail.addEventListener(
+            "click",
+            async function () {
+
+                const emailAddress =
+                    "fyloq.help@gmail.com";
+
+                try {
+
+                    await navigator.clipboard.writeText(
+                        emailAddress
+                    );
+
+                    supportCopyStatus.textContent =
+                        "Email address copied.";
+
+                    copySupportEmail.textContent =
+                        "Copied";
+
+                    setTimeout(
+                        function () {
+
+                            supportCopyStatus.textContent =
+                                "";
+
+                            copySupportEmail.textContent =
+                                "Copy Email Address";
+
+                        },
+                        2000
+                    );
+
+                } catch (error) {
+
+                    supportCopyStatus.textContent =
+                        "Copy failed. Please copy it manually.";
+
+                }
+
+            }
+        );
+
+        /* ===== COPY SUPPORT EMAIL END ===== */
+
+
+        /* ===== SUPPORT FORM LOADING START ===== */
+
+        const supportForm =
+            document.getElementById(
+                "supportForm"
+            );
+
+        const supportSubmitButton =
+            document.getElementById(
+                "supportSubmitButton"
+            );
+
+        supportForm.addEventListener(
+            "submit",
+            function () {
+
+                supportSubmitButton.disabled =
+                    true;
+
+                supportSubmitButton.textContent =
+                    "Submitting Request...";
+
+            }
+        );
+
+        /* ===== SUPPORT FORM LOADING END ===== */
+
+    </script>
+
+    <!-- ====================================================== -->
+    <!-- ===== SUPPORT PAGE JAVASCRIPT END ===== -->
+    <!-- ====================================================== -->
+
+</body>
+
+</html>

@@ -3,42 +3,69 @@
 # File: .gitignore
 # ==========================================================
 
+
 # ===== PYTHON CACHE START =====
+
 __pycache__/
 *.py[cod]
 *$py.class
+
 # ===== PYTHON CACHE END =====
 
 
 # ===== VIRTUAL ENVIRONMENT START =====
+
 venv/
 .venv/
 env/
+
 # ===== VIRTUAL ENVIRONMENT END =====
 
 
-# ===== DATABASE START =====
+# ===== LOCAL DATABASE START =====
+
 instance/*.db
 *.sqlite
 *.sqlite3
-# ===== DATABASE END =====
+
+# ===== LOCAL DATABASE END =====
 
 
-# ===== USER UPLOADED FILES START =====
+# ===== USER UPLOADS START =====
+
 uploads/*
 !uploads/.gitkeep
-# ===== USER UPLOADED FILES END =====
+
+# ===== USER UPLOADS END =====
 
 
-# ===== ENVIRONMENT AND SECRET FILES START =====
+# ===== ENVIRONMENT SECRETS START =====
+
 .env
 .env.*
 *.key
-# ===== ENVIRONMENT AND SECRET FILES END =====
+
+# ===== ENVIRONMENT SECRETS END =====
 
 
-# ===== VS CODE AND SYSTEM FILES START =====
+# ===== EDITOR AND SYSTEM FILES START =====
+
 .vscode/
 .DS_Store
 Thumbs.db
-# ===== VS CODE AND SYSTEM FILES END =====
+
+# ===== EDITOR AND SYSTEM FILES END =====
+# ===== LOG FILES START =====
+
+*.log
+
+# ===== LOG FILES END =====
+
+
+# ===== TEST AND BUILD FILES START =====
+
+.pytest_cache/
+dist/
+build/
+
+# ===== TEST AND BUILD FILES END =====

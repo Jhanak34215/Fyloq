@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- ====================================================== -->
+    <!-- ===== 404 PAGE META START ===== -->
+    <!-- ====================================================== -->
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="The requested Fyloq page could not be found."
+    >
+
+    <title>Page Not Found | Fyloq</title>
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+    >
+
+    <!-- ====================================================== -->
+    <!-- ===== 404 PAGE META END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ===== GOOGLE FONT START ===== -->
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- ===== GOOGLE FONT END ===== -->
+
+
+    <!-- ===== ERROR PAGE CSS START ===== -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/error.css') }}"
+    >
+
+    <!-- ===== ERROR PAGE CSS END ===== -->
+
+</head>
+
+<body>
+
+    <!-- ====================================================== -->
+    <!-- ===== 404 PAGE WRAPPER START ===== -->
+    <!-- ====================================================== -->
+
+    <main class="error-page">
+
+        <section class="error-card">
+
+            <a
+                href="/"
+                class="error-brand"
+                aria-label="Go to Fyloq home page"
+            >
+
+                <img
+                    src="{{ url_for('static', filename='images/fyloq-logo.svg') }}"
+                    alt="Fyloq"
+                    style="width: 150px; height: auto; display: block;"
+                >
+
+            </a>
+
+
+            <div class="error-code">
+                404
+            </div>
+
+
+            <span class="error-label">
+                PAGE NOT FOUND
+            </span>
+
+
+            <h1>
+                This page does not exist
+            </h1>
+
+
+            <p>
+
+                The page may have been removed, renamed, or the
+                address may be incorrect.
+
+            </p>
+
+
+            <div class="error-actions">
+
+                <a
+                    href="/"
+                    class="error-primary-button"
+                >
+                    Go to Home
+                </a>
+
+                <a
+                    href="/#upload"
+                    class="error-secondary-button"
+                >
+                    Upload a File
+                </a>
+
+            </div>
+
+
+            <div class="error-help">
+
+                Need assistance?
+
+                <a href="/support">
+                    Contact Support
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ====================================================== -->
+    <!-- ===== 404 PAGE WRAPPER END ===== -->
+    <!-- ====================================================== -->
+
+</body>
+
+</html>

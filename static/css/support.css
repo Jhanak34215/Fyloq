@@ -1,0 +1,1013 @@
+/* =========================================================
+   QUICKVAULT SUPPORT PAGE STYLESHEET
+   File: static/css/support.css
+   ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 01. GLOBAL RESET START ===== */
+/* ========================================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    min-height:100vh;
+
+    background:#f6f7fb;
+    color:#171a2b;
+
+    font-family:"Inter",Arial,sans-serif;
+}
+
+button,
+input,
+select,
+textarea{
+    font:inherit;
+}
+
+a{
+    text-decoration:none;
+}
+
+/* ========================================================= */
+/* ===== 01. GLOBAL RESET END ===== */
+/* ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 02. SUPPORT NAVBAR START ===== */
+/* ========================================================= */
+
+.support-navbar{
+    width:100%;
+    min-height:74px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 70px;
+
+    position:sticky;
+    top:0;
+    z-index:1000;
+
+    background:#0f172a;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+
+    box-shadow:0 10px 30px rgba(15,23,42,0.12);
+}
+
+.support-brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    color:#ffffff;
+}
+
+.support-brand-icon{
+    width:38px;
+    height:38px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #4f46e5
+    );
+
+    border-radius:11px;
+
+    box-shadow:0 10px 24px rgba(37,99,235,0.28);
+}
+
+.support-brand > span:last-child{
+    font-size:20px;
+    font-weight:800;
+}
+
+.support-nav-links{
+    display:flex;
+    align-items:center;
+    gap:28px;
+}
+
+.support-nav-links a{
+    position:relative;
+
+    color:#cbd5e1;
+
+    font-size:13px;
+    font-weight:600;
+
+    transition:0.2s ease;
+}
+
+.support-nav-links a:hover,
+.support-nav-links a.active{
+    color:#ffffff;
+}
+
+.support-nav-links a.active::after{
+    content:"";
+
+    width:100%;
+    height:2px;
+
+    position:absolute;
+    left:0;
+    bottom:-10px;
+
+    background:#3b82f6;
+    border-radius:20px;
+}
+
+.support-home-button{
+    min-height:42px;
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:0 18px;
+
+    background:#2563eb;
+    color:#ffffff;
+
+    border-radius:10px;
+
+    font-size:12px;
+    font-weight:700;
+
+    box-shadow:0 10px 24px rgba(37,99,235,0.22);
+
+    transition:0.2s ease;
+}
+
+.support-home-button:hover{
+    transform:translateY(-2px);
+
+    background:#1d4ed8;
+}
+
+/* ========================================================= */
+/* ===== 02. SUPPORT NAVBAR END ===== */
+/* ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 03. SUPPORT HERO START ===== */
+/* ========================================================= */
+
+.support-hero{
+    padding:75px 20px 45px;
+
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(59,130,246,0.10),
+            transparent 40%
+        ),
+        #f8fafc;
+
+    text-align:center;
+}
+
+.support-page-label{
+    display:inline-block;
+
+    margin-bottom:13px;
+
+    color:#2563eb;
+
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:2px;
+}
+
+.support-hero h1{
+    margin-bottom:16px;
+
+    color:#0f172a;
+
+    font-size:42px;
+    line-height:1.2;
+    letter-spacing:-1.5px;
+}
+
+.support-hero p{
+    max-width:680px;
+
+    margin:0 auto;
+
+    color:#64748b;
+
+    font-size:15px;
+    line-height:1.8;
+}
+
+/* ========================================================= */
+/* ===== 03. SUPPORT HERO END ===== */
+/* ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 04. SUPPORT MAIN LAYOUT START ===== */
+/* ========================================================= */
+
+.support-main{
+    max-width:1180px;
+
+    display:grid;
+    grid-template-columns:minmax(0,1.45fr) minmax(290px,0.75fr);
+
+    gap:28px;
+
+    margin:0 auto;
+    padding:25px 30px 95px;
+}
+
+/* ========================================================= */
+/* ===== 04. SUPPORT MAIN LAYOUT END ===== */
+/* ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 05. SUPPORT FORM CARD START ===== */
+/* ========================================================= */
+
+.support-form-card{
+    padding:32px;
+
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:20px;
+
+    box-shadow:0 20px 45px rgba(15,23,42,0.07);
+}
+
+.support-card-heading{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+
+    margin-bottom:26px;
+}
+
+.support-heading-icon{
+    width:50px;
+    height:50px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    background:#eff6ff;
+    color:#2563eb;
+
+    border-radius:14px;
+
+    font-size:22px;
+}
+
+.support-card-heading span{
+    display:block;
+
+    margin-bottom:7px;
+
+    color:#2563eb;
+
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:1.7px;
+}
+
+.support-card-heading h2{
+    margin-bottom:7px;
+
+    color:#0f172a;
+
+    font-size:24px;
+    letter-spacing:-0.5px;
+}
+
+.support-card-heading p{
+    color:#94a3b8;
+
+    font-size:11px;
+}
+
+/* ========================================================= */
+/* ===== 05. SUPPORT FORM CARD END ===== */
+/* ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 06. SUPPORT MESSAGE START ===== */
+/* ========================================================= */
+
+.support-message{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+
+    margin-bottom:20px;
+    padding:14px;
+
+    border-radius:12px;
+}
+
+.support-message > span{
+    width:34px;
+    height:34px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    border-radius:9px;
+
+    font-weight:800;
+}
+
+.support-message strong{
+    display:block;
+
+    margin-bottom:4px;
+
+    font-size:12px;
+}
+
+.support-message p{
+    font-size:11px;
+    line-height:1.55;
+}
+
+.support-message small{
+    display:block;
+
+    margin-top:7px;
+
+    font-size:10px;
+}
+
+.support-success{
+    background:#ecfdf5;
+    color:#166534;
+
+    border:1px solid #bbf7d0;
+}
+
+.support-success > span{
+    background:#dcfce7;
+    color:#15803d;
+}
+
+.support-error{
+    background:#fff1f2;
+    color:#9f1239;
+
+    border:1px solid #fecdd3;
+}
+
+.support-error > span{
+    background:#ffe4e6;
+    color:#be123c;
+}
+
+/* ========================================================= */
+/* ===== 06. SUPPORT MESSAGE END ===== */
+/* ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 07. SUPPORT FORM START ===== */
+/* ========================================================= */
+
+.support-form{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.support-form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+
+    gap:16px;
+}
+
+.support-form-group{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.support-form-group label{
+    color:#334155;
+
+    font-size:12px;
+    font-weight:700;
+}
+
+.support-form-group input,
+.support-form-group select,
+.support-form-group textarea{
+    width:100%;
+
+    outline:none;
+
+    background:#f8fafc;
+    color:#0f172a;
+
+    border:1px solid #cbd5e1;
+    border-radius:11px;
+
+    font-size:12px;
+
+    transition:0.2s ease;
+}
+
+.support-form-group input,
+.support-form-group select{
+    height:48px;
+
+    padding:0 14px;
+}
+
+.support-form-group textarea{
+    min-height:155px;
+
+    padding:14px;
+
+    resize:vertical;
+}
+
+.support-form-group input:focus,
+.support-form-group select:focus,
+.support-form-group textarea:focus{
+    background:#ffffff;
+    border-color:#2563eb;
+
+    box-shadow:0 0 0 3px rgba(37,99,235,0.10);
+}
+
+.support-form-group input::placeholder,
+.support-form-group textarea::placeholder{
+    color:#94a3b8;
+}
+
+.support-form-group small{
+    color:#94a3b8;
+
+    font-size:10px;
+    line-height:1.5;
+}
+
+.support-textarea-information{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+}
+
+.support-consent{
+    display:flex;
+    align-items:flex-start;
+    gap:11px;
+
+    color:#64748b;
+
+    font-size:10px;
+    line-height:1.6;
+
+    cursor:pointer;
+}
+
+.support-consent input{
+    display:none;
+}
+
+.support-custom-checkbox{
+    width:19px;
+    height:19px;
+
+    position:relative;
+
+    flex-shrink:0;
+
+    background:#ffffff;
+    border:1px solid #cbd5e1;
+    border-radius:5px;
+}
+
+.support-consent input:checked + .support-custom-checkbox{
+    background:#2563eb;
+    border-color:#2563eb;
+}
+
+.support-consent input:checked + .support-custom-checkbox::after{
+    content:"✓";
+
+    position:absolute;
+    left:4px;
+    top:0;
+
+    color:#ffffff;
+
+    font-size:12px;
+    font-weight:800;
+}
+
+.support-submit-button{
+    min-height:52px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #4f46e5
+    );
+
+    color:#ffffff;
+
+    border:none;
+    border-radius:12px;
+
+    font-size:13px;
+    font-weight:800;
+
+    cursor:pointer;
+
+    box-shadow:0 14px 30px rgba(37,99,235,0.22);
+
+    transition:0.2s ease;
+}
+
+.support-submit-button:hover{
+    transform:translateY(-2px);
+
+    box-shadow:0 18px 36px rgba(37,99,235,0.28);
+}
+
+.support-submit-button:disabled{
+    opacity:0.65;
+
+    cursor:not-allowed;
+    transform:none;
+}
+
+/* ========================================================= */
+/* ===== 07. SUPPORT FORM END ===== */
+/* ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 08. SUPPORT INFORMATION START ===== */
+/* ========================================================= */
+
+.support-information{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.support-information-card{
+    padding:24px;
+
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:18px;
+
+    box-shadow:0 16px 36px rgba(15,23,42,0.06);
+}
+
+.support-information-icon{
+    width:46px;
+    height:46px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    margin-bottom:15px;
+
+    background:#eff6ff;
+    color:#2563eb;
+
+    border-radius:13px;
+
+    font-size:20px;
+    font-weight:800;
+}
+
+.support-information-card > span{
+    display:block;
+
+    margin-bottom:8px;
+
+    color:#2563eb;
+
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:1.5px;
+}
+
+.support-information-card h3{
+    margin-bottom:10px;
+
+    color:#0f172a;
+
+    font-size:18px;
+}
+
+.support-information-card p{
+    color:#64748b;
+
+    font-size:11px;
+    line-height:1.7;
+}
+
+.support-email-link{
+    display:block;
+
+    margin:16px 0 12px;
+
+    color:#2563eb;
+
+    font-size:13px;
+    font-weight:700;
+
+    word-break:break-word;
+}
+
+.support-copy-email{
+    width:100%;
+    min-height:42px;
+
+    background:#eff6ff;
+    color:#1d4ed8;
+
+    border:1px solid #bfdbfe;
+    border-radius:10px;
+
+    font-size:11px;
+    font-weight:800;
+
+    cursor:pointer;
+
+    transition:0.2s ease;
+}
+
+.support-copy-email:hover{
+    background:#dbeafe;
+}
+
+.support-copy-status{
+    min-height:15px;
+
+    display:block;
+
+    margin-top:7px;
+
+    color:#15803d;
+
+    font-size:9px;
+    font-weight:700;
+}
+
+.support-warning-card{
+    background:#fffdf5;
+    border-color:#fde68a;
+}
+
+.support-warning-card .support-information-icon{
+    background:#fef3c7;
+    color:#b45309;
+}
+
+.support-warning-card > span{
+    color:#b45309;
+}
+
+.support-check-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+
+    margin-top:14px;
+
+    list-style:none;
+}
+
+.support-check-list li{
+    position:relative;
+
+    padding-left:18px;
+
+    color:#64748b;
+
+    font-size:10px;
+    line-height:1.55;
+}
+
+.support-check-list li::before{
+    content:"✓";
+
+    position:absolute;
+    left:0;
+    top:0;
+
+    color:#16a34a;
+
+    font-weight:800;
+}
+
+/* ========================================================= */
+/* ===== 08. SUPPORT INFORMATION END ===== */
+/* ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 09. SUPPORT FOOTER START ===== */
+/* ========================================================= */
+
+.support-footer{
+    padding:55px 70px 24px;
+
+    background:#0f172a;
+    color:#ffffff;
+}
+
+.support-footer-grid{
+    display:grid;
+    grid-template-columns:1.4fr 1fr 1fr 1fr;
+
+    gap:40px;
+
+    max-width:1180px;
+
+    margin:0 auto 38px;
+}
+
+.support-footer-brand a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    margin-bottom:14px;
+
+    color:#ffffff;
+}
+
+.support-footer-brand p{
+    max-width:270px;
+
+    color:#94a3b8;
+
+    font-size:11px;
+    line-height:1.7;
+}
+
+.support-footer-column{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.support-footer-column h4{
+    margin-bottom:5px;
+
+    color:#ffffff;
+
+    font-size:12px;
+}
+
+.support-footer-column a,
+.support-footer-column span{
+    color:#94a3b8;
+
+    font-size:10px;
+    line-height:1.5;
+}
+
+.support-footer-column a:hover{
+    color:#ffffff;
+}
+
+.support-footer-bottom{
+    max-width:1180px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:25px;
+
+    margin:0 auto;
+    padding-top:22px;
+
+    color:#64748b;
+
+    border-top:1px solid rgba(255,255,255,0.10);
+
+    font-size:9px;
+}
+
+/* ========================================================= */
+/* ===== 09. SUPPORT FOOTER END ===== */
+/* ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 10. TABLET RESPONSIVE START ===== */
+/* ========================================================= */
+
+@media(max-width:950px){
+
+    .support-navbar{
+        padding:0 28px;
+    }
+
+    .support-nav-links{
+        display:none;
+    }
+
+    .support-main{
+        grid-template-columns:1fr;
+
+        padding-left:28px;
+        padding-right:28px;
+    }
+
+    .support-information{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+    }
+
+    .support-footer{
+        padding-left:28px;
+        padding-right:28px;
+    }
+
+    .support-footer-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== 10. TABLET RESPONSIVE END ===== */
+/* ========================================================= */
+
+
+/* ========================================================= */
+/* ===== 11. MOBILE RESPONSIVE START ===== */
+/* ========================================================= */
+
+@media(max-width:600px){
+
+    .support-navbar{
+        min-height:68px;
+
+        padding:0 16px;
+    }
+
+    .support-brand > span:last-child{
+        font-size:17px;
+    }
+
+    .support-home-button{
+        padding:0 12px;
+
+        font-size:10px;
+    }
+
+    .support-hero{
+        padding:55px 17px 35px;
+    }
+
+    .support-hero h1{
+        font-size:32px;
+    }
+
+    .support-hero p{
+        font-size:13px;
+    }
+
+    .support-main{
+        padding:18px 16px 70px;
+    }
+
+    .support-form-card{
+        padding:22px 17px;
+    }
+
+    .support-form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .support-card-heading h2{
+        font-size:20px;
+    }
+
+    .support-information{
+        display:flex;
+    }
+
+    .support-footer{
+        padding:42px 18px 20px;
+    }
+
+    .support-footer-grid{
+        grid-template-columns:1fr;
+
+        gap:28px;
+    }
+
+    .support-footer-bottom{
+        align-items:flex-start;
+        flex-direction:column;
+
+        gap:8px;
+    }
+
+    .support-textarea-information{
+        align-items:flex-start;
+        flex-direction:column;
+
+        gap:5px;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== 11. MOBILE RESPONSIVE END ===== */
+/* ========================================================= */
+/* ========================================================= */
+/* ===== FYLOQ SUPPORT BRAND OVERRIDE START ===== */
+/* ========================================================= */
+
+.support-brand{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.support-logo{
+    width:145px;
+    height:auto;
+
+    display:block;
+    object-fit:contain;
+}
+
+.support-footer-brand a{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.support-footer-logo{
+    width:150px;
+    height:auto;
+
+    display:block;
+    object-fit:contain;
+}
+
+@media(max-width:600px){
+
+    .support-logo{
+        width:125px;
+    }
+
+    .support-footer-logo{
+        width:130px;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== FYLOQ SUPPORT BRAND OVERRIDE END ===== */
+/* ========================================================= */

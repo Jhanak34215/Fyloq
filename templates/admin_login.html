@@ -12,7 +12,18 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>QuickVault Admin Login</title>
+    <meta
+        name="description"
+        content="Secure Fyloq administrator login."
+    >
+
+    <title>Fyloq Admin Login</title>
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+    >
 
     <!-- ===== ADMIN LOGIN META END ===== -->
 
@@ -40,13 +51,11 @@
 
             <a href="/" class="admin-brand">
 
-                <span class="admin-brand-icon">
-                    🔒
-                </span>
-
-                <span>
-                    QuickVault
-                </span>
+                <img
+                    src="{{ url_for('static', filename='images/fyloq-logo.svg') }}"
+                    alt="Fyloq"
+                    class="admin-brand-logo"
+                >
 
             </a>
 
@@ -96,6 +105,12 @@
                 action="{{ url_for('admin_login') }}"
                 class="admin-login-form"
             >
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
 
                 <div class="admin-form-group">
 
@@ -151,7 +166,7 @@
 
             <a href="/" class="admin-back-link">
 
-                ← Back to QuickVault
+                ← Back to Fyloq
 
             </a>
 
