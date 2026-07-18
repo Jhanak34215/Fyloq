@@ -28,6 +28,11 @@ from database import (
     get_database_connection,
     is_sqlite_database
 )
+from storage import (
+    upload_file_to_storage,
+    download_file_from_storage,
+    delete_file_from_storage
+)
 
 from flask import (
     Flask,
@@ -292,7 +297,17 @@ WEAK_FILE_PINS = {
 # ============================================================
 # ===== WEAK FILE PIN LIST END =====
 # ============================================================
+# ============================================================
+# ===== FYLOQ STORAGE LIMIT START =====
+# ============================================================
 
+FYLOQ_STORAGE_LIMIT = (
+    850 * 1024 * 1024
+)
+
+# ============================================================
+# ===== FYLOQ STORAGE LIMIT END =====
+# ============================================================
 # ============================================================
 # ===== FILE PIN SECURITY SETTINGS END =====
 # ============================================================
@@ -929,27 +944,90 @@ def is_file_expired(file_record):
 
 def mark_file_expired(file_record):
 
-    # Physical file delete karo.
-    delete_stored_file(
-        file_record["stored_filename"]
-    )
+    # ============================================================
+    # ===== SUPABASE STORAGE DELETE START =====
+    # ============================================================
+
+    try:
+
+        delete_file_from_storage(
+            file_record["stored_filename"]
+        )
+
+    except Exception as error:
+
+        error_text = str(
+            error
+        ).lower()
+
+        # Storage me file already missing ho,
+        # to DB cleanup continue kar sakte hain.
+        if not (
+            "404" in error_text
+            or
+            "not found" in error_text
+        ):
+
+            print(
+                "Expired file Storage delete failed:",
+                error
+            )
+
+            # Storage delete fail hua to DB record preserve karo,
+            # taaki cleanup baad me retry kar sake.
+            return False
+
+    # ============================================================
+    # ===== SUPABASE STORAGE DELETE END =====
+    # ============================================================
+
+
+    # ============================================================
+    # ===== DATABASE RECORD DELETE START =====
+    # ============================================================
 
     connection = get_database_connection()
 
-    # Database record permanently delete karo.
-    connection.execute(
-        """
-        DELETE FROM files
-        WHERE id = ?
-        """,
-        (
-            file_record["id"],
+    try:
+
+        connection.execute(
+            """
+            DELETE FROM files
+            WHERE id = ?
+            """,
+            (
+                file_record["id"],
+            )
         )
-    )
 
-    connection.commit()
+        connection.commit()
 
-    connection.close()
+    except Exception as error:
+
+        try:
+
+            connection.rollback()
+
+        except Exception:
+
+            pass
+
+        print(
+            "Expired file database cleanup failed:",
+            error
+        )
+
+        return False
+
+    finally:
+
+        connection.close()
+
+    # ============================================================
+    # ===== DATABASE RECORD DELETE END =====
+    # ============================================================
+
+    return True
 
 # ===== 15. MARK FILE EXPIRED END =====
 
@@ -982,26 +1060,65 @@ def cleanup_expired_files():
 
     connection = get_database_connection()
 
-    active_files = connection.execute(
-        """
-        SELECT *
-        FROM files
-        WHERE status = 'active'
-        """
-    ).fetchall()
-
     deleted_count = 0
 
-    for file_record in active_files:
+    try:
 
-        if is_file_expired(file_record):
+        active_files = connection.execute(
+            """
+            SELECT *
+            FROM files
+            WHERE status = 'active'
+            """
+        ).fetchall()
 
-            # Physical file delete karo.
-            delete_stored_file(
-                file_record["stored_filename"]
-            )
+        for file_record in active_files:
 
-            # Database record permanently delete karo.
+            if not is_file_expired(
+                file_record
+            ):
+
+                continue
+
+            storage_deleted = False
+
+            try:
+
+                delete_file_from_storage(
+                    file_record["stored_filename"]
+                )
+
+                storage_deleted = True
+
+            except Exception as error:
+
+                error_text = str(
+                    error
+                ).lower()
+
+                # File Storage me already missing hai,
+                # to expired DB record safely remove kar sakte hain.
+                if (
+                    "404" in error_text
+                    or
+                    "not found" in error_text
+                ):
+
+                    storage_deleted = True
+
+                else:
+
+                    print(
+                        "Expired file Storage cleanup failed:",
+                        file_record["stored_filename"],
+                        error
+                    )
+
+            # Storage delete fail hua to DB record preserve karo.
+            if not storage_deleted:
+
+                continue
+
             connection.execute(
                 """
                 DELETE FROM files
@@ -1014,9 +1131,26 @@ def cleanup_expired_files():
 
             deleted_count += 1
 
-    connection.commit()
+        connection.commit()
 
-    connection.close()
+    except Exception as error:
+
+        try:
+
+            connection.rollback()
+
+        except Exception:
+
+            pass
+
+        print(
+            "Automatic expired file cleanup failed:",
+            error
+        )
+
+    finally:
+
+        connection.close()
 
     return deleted_count
 
@@ -1030,46 +1164,104 @@ def permanently_delete_expired_files():
 
     connection = get_database_connection()
 
-    expired_records = connection.execute(
-        """
-        SELECT *
-        FROM files
-        WHERE status = 'expired'
-        """
-    ).fetchall()
-
     deleted_count = 0
-
     deleted_storage = 0
 
-    for file_record in expired_records:
+    try:
 
-        # Physical file agar abhi bhi storage me hai,
-        # to use permanently delete karo.
-        delete_stored_file(
-            file_record["stored_filename"]
-        )
-
-        deleted_storage += (
-            file_record["file_size"]
-            or 0
-        )
-
-        connection.execute(
+        expired_records = connection.execute(
             """
-            DELETE FROM files
-            WHERE id = ?
-            """,
-            (
-                file_record["id"],
+            SELECT *
+            FROM files
+            WHERE status = 'expired'
+            """
+        ).fetchall()
+
+        for file_record in expired_records:
+
+            storage_deleted = False
+
+            try:
+
+                delete_file_from_storage(
+                    file_record["stored_filename"]
+                )
+
+                storage_deleted = True
+
+            except Exception as error:
+
+                error_text = str(
+                    error
+                ).lower()
+
+                # Storage me file already missing ho
+                # to DB record safely remove kar sakte hain.
+                if (
+                    "404" in error_text
+                    or
+                    "not found" in error_text
+                ):
+
+                    storage_deleted = True
+
+                else:
+
+                    print(
+                        "Permanent Storage cleanup failed:",
+                        file_record["stored_filename"],
+                        error
+                    )
+
+
+            # Storage deletion fail hui to
+            # DB record preserve karo.
+            if not storage_deleted:
+
+                continue
+
+
+            connection.execute(
+                """
+                DELETE FROM files
+                WHERE id = ?
+                """,
+                (
+                    file_record["id"],
+                )
             )
+
+            deleted_count += 1
+
+            deleted_storage += (
+                file_record["file_size"]
+                or 0
+            )
+
+
+        connection.commit()
+
+
+    except Exception as error:
+
+        try:
+
+            connection.rollback()
+
+        except Exception:
+
+            pass
+
+        print(
+            "Permanent expired cleanup failed:",
+            error
         )
 
-        deleted_count += 1
 
-    connection.commit()
+    finally:
 
-    connection.close()
+        connection.close()
+
 
     return {
         "deleted_count": deleted_count,
@@ -2311,7 +2503,7 @@ def admin_dashboard():
     # ===== STORAGE PERCENTAGE START =====
 
     storage_limit = (
-        500 * 1024 * 1024
+        FYLOQ_STORAGE_LIMIT
     )
 
     storage_percentage = round(
@@ -2478,6 +2670,10 @@ def admin_delete_file(file_id):
             url_for("admin_login")
         )
 
+    # ============================================================
+    # ===== GET FILE RECORD START =====
+    # ============================================================
+
     connection = get_database_connection()
 
     file_record = connection.execute(
@@ -2486,14 +2682,12 @@ def admin_delete_file(file_id):
         FROM files
         WHERE id = ?
         """,
-        (
-            file_id,
-        )
+        (file_id,)
     ).fetchone()
 
-    if file_record is None:
+    connection.close()
 
-        connection.close()
+    if file_record is None:
 
         return redirect(
             url_for(
@@ -2502,25 +2696,135 @@ def admin_delete_file(file_id):
             )
         )
 
-    # Physical file permanently delete karo.
-    delete_stored_file(
-        file_record["stored_filename"]
-    )
+    # ============================================================
+    # ===== GET FILE RECORD END =====
+    # ============================================================
 
-    # Database record permanently delete karo.
-    connection.execute(
-        """
-        DELETE FROM files
-        WHERE id = ?
-        """,
-        (
-            file_id,
+
+    # ============================================================
+    # ===== SUPABASE STORAGE DELETE START =====
+    # ============================================================
+
+    try:
+
+        delete_file_from_storage(
+            file_record["stored_filename"]
         )
-    )
 
-    connection.commit()
+    except Exception as error:
 
-    connection.close()
+        error_text = str(
+            error
+        ).lower()
+
+        # Storage file already missing ho,
+        # to DB record delete continue kar sakte hain.
+        if not (
+            "404" in error_text
+            or
+            "not found" in error_text
+        ):
+
+            print(
+                "Admin Storage delete failed:",
+                error
+            )
+
+            return redirect(
+                url_for(
+                    "admin_dashboard",
+                    message=(
+                        "File could not be deleted from Storage. "
+                        "Database record was preserved."
+                    )
+                )
+            )
+
+    # ============================================================
+    # ===== SUPABASE STORAGE DELETE END =====
+    # ============================================================
+
+
+    # ============================================================
+    # ===== DATABASE RECORD DELETE START =====
+    # ============================================================
+
+    connection = get_database_connection()
+
+    try:
+
+        connection.execute(
+            """
+            DELETE FROM files
+            WHERE id = ?
+            """,
+            (file_id,)
+        )
+
+        connection.commit()
+
+    except Exception as error:
+
+        try:
+
+            connection.rollback()
+
+        except Exception:
+
+            pass
+
+        print(
+            "Admin database delete failed:",
+            error
+        )
+
+        # Storage delete ho chuki hai lekin DB record
+        # delete nahi hua, to record ko missing mark karo.
+        try:
+
+            connection.execute(
+                """
+                UPDATE files
+                SET status = 'missing'
+                WHERE id = ?
+                """,
+                (file_id,)
+            )
+
+            connection.commit()
+
+        except Exception as update_error:
+
+            try:
+
+                connection.rollback()
+
+            except Exception:
+
+                pass
+
+            print(
+                "Could not mark deleted file as missing:",
+                update_error
+            )
+
+        return redirect(
+            url_for(
+                "admin_dashboard",
+                message=(
+                    "File was removed from Storage, "
+                    "but database cleanup could not be completed."
+                )
+            )
+        )
+
+    finally:
+
+        connection.close()
+
+    # ============================================================
+    # ===== DATABASE RECORD DELETE END =====
+    # ============================================================
 
     return redirect(
         url_for(
@@ -2584,7 +2888,7 @@ def admin_expire_file(file_id):
             )
         )
 
-    delete_stored_file(
+    delete_file_from_storage(
         file_record["stored_filename"]
     )
 
@@ -3445,19 +3749,24 @@ def upload_file():
         f"{uuid.uuid4().hex}."
         f"{file_extension}"
     )
+    # ============================================================
+    # ===== PREPARE FILE FOR SUPABASE STORAGE START =====
+    # ============================================================
 
-    stored_file_path = os.path.join(
-        app.config["UPLOAD_FOLDER"],
-        stored_filename
+    uploaded_file.stream.seek(0)
+
+    file_data = uploaded_file.stream.read()
+
+    uploaded_file.stream.seek(0)
+
+    file_size = len(
+        file_data
     )
 
-    uploaded_file.save(
-        stored_file_path
-    )
-
-    file_size = os.path.getsize(
-        stored_file_path
-    )
+    # ============================================================
+    # ===== PREPARE FILE FOR SUPABASE STORAGE END =====
+    # ============================================================
+    
     # ============================================================
     # ===== EMPTY FILE VALIDATION START =====
     # ============================================================
@@ -3705,67 +4014,216 @@ def upload_file():
             minutes=expiry_minutes
         )
     )
+    # ============================================================
+    # ===== ACTIVE STORAGE LIMIT CHECK START =====
+    # ============================================================
+
+    storage_connection = (
+        get_database_connection()
+    )
+
+    try:
+
+        active_storage = (
+            storage_connection.execute(
+                """
+                SELECT
+                    COALESCE(
+                        SUM(file_size),
+                        0
+                    )
+                FROM files
+                WHERE status = 'active'
+                """
+            ).fetchone()[0]
+        )
+
+    finally:
+
+        storage_connection.close()
+
+
+    if (
+        active_storage
+        +
+        file_size
+        >
+        FYLOQ_STORAGE_LIMIT
+    ):
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "Fyloq storage is currently full. "
+                    "Please try again later."
+                )
+            }
+        ), 507
+
+    # ============================================================
+    # ===== ACTIVE STORAGE LIMIT CHECK END =====
+    # ============================================================
+
 
     access_code = generate_access_code()
 
-    connection = get_database_connection()
+    # ============================================================
+    # ===== SUPABASE STORAGE UPLOAD START =====
+    # ============================================================
 
-    connection.execute(
-        """
-        INSERT INTO files (
-
-            original_filename,
-            stored_filename,
-            access_code,
-            pin_hash,
-            file_size,
-            file_extension,
-            expiry_minutes,
-            uploaded_at,
-            expires_at,
-            one_time_download,
-            download_count,
-            status,
-            failed_pin_attempts,
-            locked_until,
-            transfer_mode,
-            view_count,
-            last_viewed_at,
-            print_count,
-            last_printed_at
-
-        )
-        VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?
-        )
-        """,
-        (
-            original_filename,
-            stored_filename,
-            access_code,
-            pin_hash,
-            file_size,
-            file_extension,
-            expiry_minutes,
-            uploaded_at.isoformat(),
-            expires_at.isoformat(),
-            one_time_download,
-            0,
-            "active",
-            0,
-            None,
-            transfer_mode,
-            0,
-            None,
-            0,
-            None
-        )
+    content_type = (
+        uploaded_file.mimetype
+        or
+        "application/octet-stream"
     )
 
-    connection.commit()
+    try:
 
-    connection.close()
+        upload_file_to_storage(
+            stored_filename,
+            file_data,
+            content_type
+        )
+
+    except Exception as error:
+
+        print(
+            "Supabase Storage upload failed:",
+            error
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "File upload failed. "
+                    "Please try again."
+                )
+            }
+        ), 500
+
+    # ============================================================
+    # ===== SUPABASE STORAGE UPLOAD END =====
+    # ============================================================
+
+
+    # ============================================================
+    # ===== DATABASE RECORD INSERT START =====
+    # ============================================================
+
+    connection = None
+
+    try:
+
+        connection = get_database_connection()
+
+        connection.execute(
+            """
+            INSERT INTO files (
+
+                original_filename,
+                stored_filename,
+                access_code,
+                pin_hash,
+                file_size,
+                file_extension,
+                expiry_minutes,
+                uploaded_at,
+                expires_at,
+                one_time_download,
+                download_count,
+                status,
+                failed_pin_attempts,
+                locked_until,
+                transfer_mode,
+                view_count,
+                last_viewed_at,
+                print_count,
+                last_printed_at
+
+            )
+            VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )
+            """,
+            (
+                original_filename,
+                stored_filename,
+                access_code,
+                pin_hash,
+                file_size,
+                file_extension,
+                expiry_minutes,
+                uploaded_at.isoformat(),
+                expires_at.isoformat(),
+                one_time_download,
+                0,
+                "active",
+                0,
+                None,
+                transfer_mode,
+                0,
+                None,
+                0,
+                None
+            )
+        )
+
+        connection.commit()
+
+    except Exception as error:
+
+        if connection is not None:
+
+            try:
+
+                connection.rollback()
+
+            except Exception:
+
+                pass
+
+        # DB record create nahi hua,
+        # isliye Supabase Storage file rollback/delete karo.
+        try:
+
+            delete_file_from_storage(
+                stored_filename
+            )
+
+        except Exception as cleanup_error:
+
+            print(
+                "Storage rollback failed:",
+                cleanup_error
+            )
+
+        print(
+            "Database insert failed:",
+            error
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "File upload could not be completed. "
+                    "Please try again."
+                )
+            }
+        ), 500
+
+    finally:
+
+        if connection is not None:
+
+            connection.close()
+
+    # ============================================================
+    # ===== DATABASE RECORD INSERT END =====
+    # ============================================================
 
     access_url = (
         request.url_root.rstrip("/")
@@ -3931,24 +4389,7 @@ def access_file():
         file_record["stored_filename"]
     )
 
-    if not os.path.exists(
-        stored_file_path
-    ):
-
-        mark_file_missing(
-            file_record["id"]
-        )
-
-        return jsonify(
-            {
-                "success": False,
-                "message": (
-                    "The stored file could "
-                    "not be found."
-                )
-            }
-        ), 404
-
+    
     lock_remaining_seconds = (
         get_pin_lock_remaining_seconds(
             file_record
@@ -4450,23 +4891,7 @@ def view_print_page(access_code):
             410
         )
 
-    stored_file_path = os.path.join(
-        app.config["UPLOAD_FOLDER"],
-        file_record["stored_filename"]
-    )
-
-    if not os.path.exists(
-        stored_file_path
-    ):
-
-        mark_file_missing(
-            file_record["id"]
-        )
-
-        return (
-            "Stored file not found.",
-            404
-        )
+    
 
     file_type = (
         file_record["file_extension"]
@@ -4661,23 +5086,50 @@ def view_print_content(access_code):
             410
         )
 
-    stored_file_path = os.path.join(
-        app.config["UPLOAD_FOLDER"],
-        file_record["stored_filename"]
-    )
+        # ============================================================
+    # ===== SUPABASE VIEW FILE FETCH START =====
+    # ============================================================
 
-    if not os.path.exists(
-        stored_file_path
-    ):
+    try:
 
-        mark_file_missing(
-            file_record["id"]
+        file_data = download_file_from_storage(
+            file_record["stored_filename"]
         )
+
+    except Exception as error:
+
+        print(
+            "Supabase View + Print fetch failed:",
+            error
+        )
+
+        error_text = str(
+            error
+        ).lower()
+
+        if (
+            "404" in error_text
+            or
+            "not found" in error_text
+        ):
+
+            mark_file_missing(
+                file_record["id"]
+            )
+
+            return (
+                "Stored file not found.",
+                404
+            )
 
         return (
-            "Stored file not found.",
-            404
+            "File is temporarily unavailable.",
+            503
         )
+
+    # ============================================================
+    # ===== SUPABASE VIEW FILE FETCH END =====
+    # ============================================================
 
     file_extension = (
         file_record["file_extension"]
@@ -4707,7 +5159,7 @@ def view_print_content(access_code):
         )
 
     response = send_file(
-        stored_file_path,
+        BytesIO(file_data),
 
         mimetype=file_mime_type,
 
@@ -4766,6 +5218,10 @@ def view_print_content(access_code):
 )
 def download_file(access_code):
 
+    # ============================================================
+    # ===== SECURE DOWNLOAD TOKEN VALIDATION START =====
+    # ============================================================
+
     download_token = request.args.get(
         "token",
         ""
@@ -4813,6 +5269,15 @@ def download_file(access_code):
             403
         )
 
+    # ============================================================
+    # ===== SECURE DOWNLOAD TOKEN VALIDATION END =====
+    # ============================================================
+
+
+    # ============================================================
+    # ===== GET FILE RECORD START =====
+    # ============================================================
+
     connection = get_database_connection()
 
     file_record = connection.execute(
@@ -4840,6 +5305,15 @@ def download_file(access_code):
             410
         )
 
+    # ============================================================
+    # ===== GET FILE RECORD END =====
+    # ============================================================
+
+
+    # ============================================================
+    # ===== EXPIRY CHECK START =====
+    # ============================================================
+
     if is_file_expired(
         file_record
     ):
@@ -4853,65 +5327,143 @@ def download_file(access_code):
             410
         )
 
-    stored_file_path = os.path.join(
-        app.config["UPLOAD_FOLDER"],
-        file_record["stored_filename"]
-    )
+    # ============================================================
+    # ===== EXPIRY CHECK END =====
+    # ============================================================
 
-    if not os.path.exists(
-        stored_file_path
-    ):
 
-        mark_file_missing(
-            file_record["id"]
+    # ============================================================
+    # ===== SUPABASE PRIVATE STORAGE DOWNLOAD START =====
+    # ============================================================
+
+    try:
+
+        file_data = (
+            download_file_from_storage(
+                file_record[
+                    "stored_filename"
+                ]
+            )
         )
+
+    except Exception as error:
+
+        print(
+            "Supabase Storage download failed:",
+            error
+        )
+
+        error_text = str(
+            error
+        ).lower()
+
+        if (
+            "404" in error_text
+            or
+            "not found" in error_text
+        ):
+
+            mark_file_missing(
+                file_record["id"]
+            )
+
+            return (
+                "Stored file not found.",
+                404
+            )
 
         return (
-            "Stored file not found.",
-            404
+            "File is temporarily unavailable. "
+            "Please try again.",
+            503
         )
 
-    with open(
-        stored_file_path,
-        "rb"
-    ) as stored_file:
+    # ============================================================
+    # ===== SUPABASE PRIVATE STORAGE DOWNLOAD END =====
+    # ============================================================
 
-        file_data = stored_file.read()
+
+    # ============================================================
+    # ===== DOWNLOAD DATABASE UPDATE START =====
+    # ============================================================
 
     connection = get_database_connection()
 
-    if file_record["one_time_download"]:
+    try:
 
-        # Physical file delete karo.
-        delete_stored_file(
-            file_record["stored_filename"]
-        )
+        if file_record[
+            "one_time_download"
+        ]:
 
-    # Database record permanently delete karo.
-        connection.execute(
-            """
-            DELETE FROM files
-            WHERE id = ?
-            """,
-            (
-                file_record["id"],
+            # One-time file ko Supabase Storage
+            # se permanently delete karo.
+            delete_file_from_storage(
+                file_record[
+                    "stored_filename"
+                ]
             )
+
+            # Existing Fyloq one-time logic preserve:
+            # file record bhi permanently remove hoga.
+            connection.execute(
+                """
+                DELETE FROM files
+                WHERE id = ?
+                """,
+                (
+                    file_record["id"],
+                )
+            )
+
+        else:
+
+            connection.execute(
+                """
+                UPDATE files
+                SET download_count =
+                    download_count + 1
+                WHERE id = ?
+                """,
+                (
+                    file_record["id"],
+                )
+            )
+
+        connection.commit()
+
+    except Exception as error:
+
+        try:
+
+            connection.rollback()
+
+        except Exception:
+
+            pass
+
+        print(
+            "Download database update failed:",
+            error
         )
-    else:
 
-        connection.execute(
-            """
-            UPDATE files
-            SET download_count =
-                download_count + 1
-            WHERE id = ?
-            """,
-            (file_record["id"],)
+        return (
+            "Download could not be completed. "
+            "Please try again.",
+            500
         )
 
-    connection.commit()
+    finally:
 
-    connection.close()
+        connection.close()
+
+    # ============================================================
+    # ===== DOWNLOAD DATABASE UPDATE END =====
+    # ============================================================
+
+
+    # ============================================================
+    # ===== SEND FILE TO USER START =====
+    # ============================================================
 
     return send_file(
         BytesIO(
@@ -4929,8 +5481,11 @@ def download_file(access_code):
         )
     )
 
-# ===== 31. ACTUAL FILE DOWNLOAD ROUTE END =====
+    # ============================================================
+    # ===== SEND FILE TO USER END =====
+    # ============================================================
 
+# ===== 31. ACTUAL FILE DOWNLOAD ROUTE END =====
 
 # ===== 32. MANUAL CLEANUP ROUTE START =====
 
