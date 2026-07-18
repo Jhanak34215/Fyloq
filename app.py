@@ -403,11 +403,22 @@ def create_database():
 
             failed_pin_attempts INTEGER DEFAULT 0,
 
-            locked_until TEXT
+            locked_until TEXT,
+
+            transfer_mode TEXT DEFAULT 'download',
+
+            view_count INTEGER DEFAULT 0,
+
+            last_viewed_at TEXT,
+
+            print_count INTEGER DEFAULT 0,
+
+            last_printed_at TEXT
 
         )
         """
     )
+
     connection.execute(
         """
         CREATE TABLE IF NOT EXISTS report_abuse (
@@ -437,7 +448,6 @@ def create_database():
     connection.commit()
 
     connection.close()
-
 # ===== 08. DATABASE TABLE CREATION END =====
 
 
@@ -477,10 +487,92 @@ def migrate_database():
             """
         )
 
+    # ============================================================
+    # ===== VIEW + PRINT DATABASE MIGRATION START =====
+    # ============================================================
+
+    if "transfer_mode" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN transfer_mode
+            TEXT DEFAULT 'download'
+            """
+        )
+
+    if "view_count" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN view_count
+            INTEGER DEFAULT 0
+            """
+        )
+
+    if "last_viewed_at" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN last_viewed_at TEXT
+            """
+        )
+
+    if "print_count" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN print_count
+            INTEGER DEFAULT 0
+            """
+        )
+
+    if "last_printed_at" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN last_printed_at TEXT
+            """
+        )
+
+    # Purani uploaded files automatically normal
+    # download mode me rahengi.
+    connection.execute(
+        """
+        UPDATE files
+        SET transfer_mode = 'download'
+        WHERE transfer_mode IS NULL
+           OR transfer_mode = ''
+        """
+    )
+
+    connection.execute(
+        """
+        UPDATE files
+        SET view_count = 0
+        WHERE view_count IS NULL
+        """
+    )
+
+    connection.execute(
+        """
+        UPDATE files
+        SET print_count = 0
+        WHERE print_count IS NULL
+        """
+    )
+
+    # ============================================================
+    # ===== VIEW + PRINT DATABASE MIGRATION END =====
+    # ============================================================
+
     connection.commit()
 
     connection.close()
-
 # ===== 09. EXISTING DATABASE MIGRATION END =====
 
 
@@ -3435,18 +3527,49 @@ def upload_file():
         "file_pin",
         ""
     ).strip()
+        # ============================================================
+    # ===== REQUIRED FILE PIN CHECK START =====
+    # ============================================================
+
+    if not file_pin:
+
+        delete_stored_file(
+            stored_filename
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "A 4-digit security PIN is required."
+                )
+            }
+        ), 400
+
+    # ============================================================
+    # ===== REQUIRED FILE PIN CHECK END =====
+    # ============================================================
 
     # PIN optional hai.
     # Agar PIN diya hai to exactly 4 digits hona chahiye.
-    if (
-        file_pin
+    if not (
+        file_pin.isdigit()
         and
-        not (
-            file_pin.isdigit()
-            and
-            len(file_pin) == 4
-        )
+        len(file_pin) == 4
     ):
+
+        delete_stored_file(
+            stored_filename
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "PIN must contain exactly 4 digits."
+                )
+            }
+        ), 400
 
         delete_stored_file(
             stored_filename
@@ -3502,7 +3625,71 @@ def upload_file():
     # ============================================================
     # ===== FILE PIN HASHING END =====
     # ============================================================
+    # ============================================================
+    # ===== TRANSFER MODE VALIDATION START =====
+    # ============================================================
 
+    transfer_mode = request.form.get(
+        "transfer_mode",
+        "download"
+    ).strip().lower()
+
+    allowed_transfer_modes = {
+        "download",
+        "view_print"
+    }
+
+    if transfer_mode not in allowed_transfer_modes:
+
+        delete_stored_file(
+            stored_filename
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "Please select a valid transfer mode."
+                )
+            }
+        ), 400
+
+    # View + Print mode currently sirf PDF aur images ke liye.
+    view_print_extensions = {
+        "pdf",
+        "jpg",
+        "jpeg",
+        "png"
+    }
+
+    if (
+        transfer_mode == "view_print"
+        and
+        file_extension not in view_print_extensions
+    ):
+
+        delete_stored_file(
+            stored_filename
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "View + Print mode supports only "
+                    "PDF, JPG, JPEG and PNG files."
+                )
+            }
+        ), 400
+
+    # View + Print file direct one-time download nahi hoti.
+    if transfer_mode == "view_print":
+
+        one_time_download = 0
+
+    # ============================================================
+    # ===== TRANSFER MODE VALIDATION END =====
+    # ============================================================
     one_time_value = request.form.get(
         "one_time_download",
         "false"
@@ -3510,7 +3697,11 @@ def upload_file():
 
     one_time_download = (
         1
-        if one_time_value == "true"
+        if (
+            one_time_value == "true"
+            and
+            transfer_mode == "download"
+        )
         else 0
     )
 
@@ -3545,10 +3736,18 @@ def upload_file():
             download_count,
             status,
             failed_pin_attempts,
-            locked_until
+            locked_until,
+            transfer_mode,
+            view_count,
+            last_viewed_at,
+            print_count,
+            last_printed_at
 
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )
         """,
         (
             original_filename,
@@ -3563,6 +3762,11 @@ def upload_file():
             one_time_download,
             0,
             "active",
+            0,
+            None,
+            transfer_mode,
+            0,
+            None,
             0,
             None
         )
@@ -3612,8 +3816,16 @@ def upload_file():
                 expires_at.isoformat()
             ),
 
-            "one_time_download": bool(
+                       "one_time_download": bool(
                 one_time_download
+            ),
+
+            "transfer_mode": transfer_mode,
+
+            "transfer_mode_label": (
+                "View + Print"
+                if transfer_mode == "view_print"
+                else "Download"
             ),
 
             "access_url": access_url,
@@ -3831,21 +4043,69 @@ def access_file():
             file_record["id"]
         )
 
-    download_token = (
-        download_token_serializer.dumps(
-            {
-                "access_code": access_code
-            },
-            salt="quickvault-download"
-        )
+        # ============================================================
+    # ===== VERIFIED FILE ACTION START =====
+    # ============================================================
+
+    transfer_mode = (
+        file_record["transfer_mode"]
+        or
+        "download"
     )
+
+    if transfer_mode == "view_print":
+
+        access_token = (
+            download_token_serializer.dumps(
+                {
+                    "access_code": access_code
+                },
+                salt="quickvault-view-print"
+            )
+        )
+
+        action_url = url_for(
+            "view_print_page",
+            access_code=access_code,
+            token=access_token
+        )
+
+        action_label = (
+            "View + Print"
+        )
+
+    else:
+
+        access_token = (
+            download_token_serializer.dumps(
+                {
+                    "access_code": access_code
+                },
+                salt="quickvault-download"
+            )
+        )
+
+        action_url = url_for(
+            "download_file",
+            access_code=access_code,
+            token=access_token
+        )
+
+        action_label = (
+            "Download File"
+        )
+
+    # ============================================================
+    # ===== VERIFIED FILE ACTION END =====
+    # ============================================================
 
     return jsonify(
         {
             "success": True,
 
             "message": (
-                "File verified successfully."
+                "Access code and PIN "
+                "verified successfully."
             ),
 
             "filename": (
@@ -3868,15 +4128,644 @@ def access_file():
                 ]
             ),
 
-            "download_url": (
-                f"/download/{access_code}"
-                f"?token={download_token}"
-            )
+            "transfer_mode": transfer_mode,
+
+            "action_label": action_label,
+
+            "action_url": action_url,
+
+            # Existing JavaScript compatibility.
+            "download_url": action_url
         }
     )
 
 # ===== 30. ACCESS FILE VERIFICATION ROUTE END =====
+# ============================================================
+# ===== LIVE FILE TRACKING ROUTE START =====
+# ============================================================
 
+@app.route(
+    "/track-file",
+    methods=["POST"]
+)
+@limiter.limit("30 per minute")
+def track_file():
+
+    request_data = request.get_json(
+        silent=True
+    ) or {}
+
+    access_code = str(
+        request_data.get(
+            "access_code",
+            ""
+        )
+    ).strip()
+
+    # ===== ACCESS CODE VALIDATION =====
+
+    if not (
+        access_code.isdigit()
+        and
+        len(access_code) == 6
+    ):
+
+        return jsonify(
+            {
+                "success": False,
+                "message": "Enter a valid 6-digit access code."
+            }
+        ), 400
+
+    connection = get_database_connection()
+
+    file_record = connection.execute(
+        """
+        SELECT *
+        FROM files
+        WHERE access_code = ?
+        """,
+        (
+            access_code,
+        )
+    ).fetchone()
+
+    connection.close()
+
+    if file_record is None:
+
+        return jsonify(
+            {
+                "success": False,
+                "message": "No tracking information found for this access code."
+            }
+        ), 404
+
+
+    # ===== FILE STATUS CHECK =====
+
+    current_status = (
+        file_record["status"]
+        or
+        "active"
+    )
+
+    expires_at = datetime.fromisoformat(
+        file_record["expires_at"]
+    )
+
+    current_time = datetime.now()
+
+    remaining_seconds = max(
+        0,
+        int(
+            (
+                expires_at
+                -
+                current_time
+            ).total_seconds()
+        )
+    )
+
+    if (
+        current_time >= expires_at
+        and
+        current_status == "active"
+    ):
+
+        current_status = "expired"
+
+
+    # ===== LAST ACTIVITY =====
+
+    activity_times = []
+
+    if file_record["uploaded_at"]:
+
+        activity_times.append(
+            file_record["uploaded_at"]
+        )
+
+    if file_record["last_viewed_at"]:
+
+        activity_times.append(
+            file_record["last_viewed_at"]
+        )
+
+    if file_record["last_printed_at"]:
+
+        activity_times.append(
+            file_record["last_printed_at"]
+        )
+
+    last_activity = (
+        max(activity_times)
+        if activity_times
+        else None
+    )
+
+
+    return jsonify(
+        {
+            "success": True,
+
+            "status": current_status,
+
+            "filename": file_record[
+                "original_filename"
+            ],
+
+            "file_size": file_record[
+                "file_size"
+            ],
+
+            "transfer_mode": (
+                file_record[
+                    "transfer_mode"
+                ]
+                or
+                "download"
+            ),
+
+            "uploaded_at": file_record[
+                "uploaded_at"
+            ],
+
+            "expires_at": file_record[
+                "expires_at"
+            ],
+
+            "remaining_seconds": (
+                remaining_seconds
+            ),
+
+            "download_count": (
+                file_record[
+                    "download_count"
+                ]
+                or 0
+            ),
+
+            "view_count": (
+                file_record[
+                    "view_count"
+                ]
+                or 0
+            ),
+
+            "print_count": (
+                file_record[
+                    "print_count"
+                ]
+                or 0
+            ),
+
+            "last_viewed_at": (
+                file_record[
+                    "last_viewed_at"
+                ]
+            ),
+
+            "last_printed_at": (
+                file_record[
+                    "last_printed_at"
+                ]
+            ),
+
+            "last_activity": (
+                last_activity
+            ),
+
+            "one_time_download": bool(
+                file_record[
+                    "one_time_download"
+                ]
+            )
+        }
+    )
+
+# ============================================================
+# ===== LIVE FILE TRACKING ROUTE END =====
+# ============================================================
+
+# ============================================================
+# ===== VIEW + PRINT PAGE ROUTE START =====
+# ============================================================
+
+@app.route(
+    "/view-print/<access_code>",
+    methods=["GET"]
+)
+def view_print_page(access_code):
+
+    access_token = request.args.get(
+        "token",
+        ""
+    )
+
+    if not access_token:
+
+        return (
+            "Invalid View + Print request.",
+            403
+        )
+
+    try:
+
+        token_data = (
+            download_token_serializer.loads(
+                access_token,
+                salt="quickvault-view-print",
+                max_age=300
+            )
+        )
+
+    except SignatureExpired:
+
+        return (
+            "View + Print link expired. "
+            "Enter the access code and PIN again.",
+            403
+        )
+
+    except BadSignature:
+
+        return (
+            "Invalid View + Print link.",
+            403
+        )
+
+    if (
+        token_data.get("access_code")
+        !=
+        access_code
+    ):
+
+        return (
+            "Invalid access code.",
+            403
+        )
+
+    connection = get_database_connection()
+
+    file_record = connection.execute(
+        """
+        SELECT *
+        FROM files
+        WHERE access_code = ?
+        """,
+        (
+            access_code,
+        )
+    ).fetchone()
+
+    connection.close()
+
+    if file_record is None:
+
+        return (
+            "File not found.",
+            404
+        )
+
+    if (
+        file_record["transfer_mode"]
+        !=
+        "view_print"
+    ):
+
+        return (
+            "This file is not available in View + Print mode.",
+            403
+        )
+
+    if file_record["status"] != "active":
+
+        return (
+            "This file is no longer available.",
+            410
+        )
+
+    if is_file_expired(
+        file_record
+    ):
+
+        mark_file_expired(
+            file_record
+        )
+
+        return (
+            "This file has expired.",
+            410
+        )
+
+    stored_file_path = os.path.join(
+        app.config["UPLOAD_FOLDER"],
+        file_record["stored_filename"]
+    )
+
+    if not os.path.exists(
+        stored_file_path
+    ):
+
+        mark_file_missing(
+            file_record["id"]
+        )
+
+        return (
+            "Stored file not found.",
+            404
+        )
+
+    file_type = (
+        file_record["file_extension"]
+        .lower()
+    )
+
+    if file_type not in {
+        "pdf",
+        "jpg",
+        "jpeg",
+        "png"
+    }:
+
+        return (
+            "This file type cannot be displayed.",
+            415
+        )
+
+    connection = get_database_connection()
+
+    connection.execute(
+        """
+        UPDATE files
+        SET
+            view_count = view_count + 1,
+            last_viewed_at = ?
+        WHERE id = ?
+        """,
+        (
+            datetime.now().isoformat(),
+            file_record["id"]
+        )
+    )
+
+    connection.commit()
+
+    connection.close()
+
+    content_url = url_for(
+        "view_print_content",
+        access_code=access_code,
+        token=access_token
+    )
+
+    try:
+
+        formatted_expiry = (
+            datetime.fromisoformat(
+                file_record["expires_at"]
+            ).strftime(
+                "%d %b %Y, %I:%M %p"
+            )
+        )
+
+    except (
+        TypeError,
+        ValueError
+    ):
+
+        formatted_expiry = (
+            file_record["expires_at"]
+        )
+
+    return render_template(
+        "view_print.html",
+
+        filename=(
+            file_record[
+                "original_filename"
+            ]
+        ),
+
+        file_type=file_type,
+
+        content_url=content_url,
+
+        expires_at=formatted_expiry
+    )
+
+# ============================================================
+# ===== VIEW + PRINT PAGE ROUTE END =====
+# ============================================================
+
+
+# ============================================================
+# ===== VIEW + PRINT CONTENT ROUTE START =====
+# ============================================================
+
+@app.route(
+    "/view-print-content/<access_code>",
+    methods=["GET"]
+)
+def view_print_content(access_code):
+
+    access_token = request.args.get(
+        "token",
+        ""
+    )
+
+    if not access_token:
+
+        return (
+            "Invalid file request.",
+            403
+        )
+
+    try:
+
+        token_data = (
+            download_token_serializer.loads(
+                access_token,
+                salt="quickvault-view-print",
+                max_age=300
+            )
+        )
+
+    except SignatureExpired:
+
+        return (
+            "Secure file link expired.",
+            403
+        )
+
+    except BadSignature:
+
+        return (
+            "Invalid secure file link.",
+            403
+        )
+
+    if (
+        token_data.get("access_code")
+        !=
+        access_code
+    ):
+
+        return (
+            "Invalid access code.",
+            403
+        )
+
+    connection = get_database_connection()
+
+    file_record = connection.execute(
+        """
+        SELECT *
+        FROM files
+        WHERE access_code = ?
+        """,
+        (
+            access_code,
+        )
+    ).fetchone()
+
+    connection.close()
+
+    if file_record is None:
+
+        return (
+            "File not found.",
+            404
+        )
+
+    if (
+        file_record["transfer_mode"]
+        !=
+        "view_print"
+    ):
+
+        return (
+            "Direct file access is not allowed.",
+            403
+        )
+
+    if file_record["status"] != "active":
+
+        return (
+            "This file is no longer available.",
+            410
+        )
+
+    if is_file_expired(
+        file_record
+    ):
+
+        mark_file_expired(
+            file_record
+        )
+
+        return (
+            "This file has expired.",
+            410
+        )
+
+    stored_file_path = os.path.join(
+        app.config["UPLOAD_FOLDER"],
+        file_record["stored_filename"]
+    )
+
+    if not os.path.exists(
+        stored_file_path
+    ):
+
+        mark_file_missing(
+            file_record["id"]
+        )
+
+        return (
+            "Stored file not found.",
+            404
+        )
+
+    file_extension = (
+        file_record["file_extension"]
+        .lower()
+    )
+
+    mime_types = {
+
+        "pdf": "application/pdf",
+
+        "jpg": "image/jpeg",
+
+        "jpeg": "image/jpeg",
+
+        "png": "image/png"
+    }
+
+    file_mime_type = mime_types.get(
+        file_extension
+    )
+
+    if file_mime_type is None:
+
+        return (
+            "Unsupported viewer file type.",
+            415
+        )
+
+    response = send_file(
+        stored_file_path,
+
+        mimetype=file_mime_type,
+
+        as_attachment=False,
+
+        download_name=(
+            file_record[
+                "original_filename"
+            ]
+        ),
+
+        conditional=True
+    )
+
+    response.headers[
+        "Content-Disposition"
+    ] = (
+        "inline; filename=\""
+        +
+        file_record[
+            "original_filename"
+        ].replace(
+            "\"",
+            ""
+        )
+        +
+        "\""
+    )
+
+    response.headers[
+        "Cache-Control"
+    ] = (
+        "no-store, no-cache, "
+        "must-revalidate, private"
+    )
+
+    response.headers[
+        "Pragma"
+    ] = "no-cache"
+
+    response.headers[
+        "X-Frame-Options"
+    ] = "SAMEORIGIN"
+
+    return response
+
+# ============================================================
+# ===== VIEW + PRINT CONTENT ROUTE END =====
+# ============================================================
 
 # ===== 31. ACTUAL FILE DOWNLOAD ROUTE START =====
 

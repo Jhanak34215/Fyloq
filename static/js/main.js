@@ -39,7 +39,25 @@ const secureUploadButton =
     document.querySelector(
         ".secure-upload-button"
     );
+const viewPrintOnly =
+    document.getElementById(
+        "viewPrintOnly"
+    );
 
+const viewPrintCard =
+    document.getElementById(
+        "viewPrintCard"
+    );
+
+const oneTimeDownload =
+    document.getElementById(
+        "oneTimeDownload"
+    );
+
+const oneTimeDownloadCard =
+    document.getElementById(
+        "oneTimeDownloadCard"
+    );
 
 /* ===== DOWNLOAD MODAL REFERENCES START ===== */
 
@@ -528,6 +546,79 @@ fileDropArea.addEventListener(
     }
 );
 
+function updateTransferModeUI() {
+
+    if (
+        viewPrintOnly &&
+        viewPrintCard
+    ) {
+
+        viewPrintCard.classList.toggle(
+            "active",
+            viewPrintOnly.checked
+        );
+
+    }
+
+    if (
+        oneTimeDownload &&
+        oneTimeDownloadCard
+    ) {
+
+        oneTimeDownloadCard.classList.toggle(
+            "active",
+            oneTimeDownload.checked
+        );
+
+    }
+
+}
+
+
+if (viewPrintOnly && oneTimeDownload) {
+
+    viewPrintOnly.addEventListener("change", function () {
+
+        if (this.checked) {
+            oneTimeDownload.checked = false;
+            oneTimeDownload.disabled = true;
+        } else {
+            oneTimeDownload.disabled = false;
+        }
+
+    });
+
+    oneTimeDownload.addEventListener("change", function () {
+
+        if (this.checked) {
+            viewPrintOnly.checked = false;
+        }
+
+    });
+
+}
+
+
+    oneTimeDownload.addEventListener(
+        "change",
+        function () {
+
+            if (oneTimeDownload.checked) {
+
+                viewPrintOnly.checked =
+                    false;
+
+            }
+
+            updateTransferModeUI();
+
+        }
+    );
+
+
+
+
+updateTransferModeUI();
 /* ===== 08. DRAG AND DROP EVENTS END ===== */
 
 
@@ -571,31 +662,51 @@ uploadForm.addEventListener(
 
         }
 
-        const expiryTime =
-            document.getElementById(
-                "expiryTime"
-            ).value;
-
-        // =========================================================
-// ===== FILE PIN VALIDATION START =====
-// =========================================================
+const expiryTime =
+    document.getElementById(
+        "expiryTime"
+    ).value;
 
 const filePin =
     document.getElementById(
         "filePin"
     ).value.trim();
 
-const oneTimeDownload =
+const viewPrintSelected =
+    document.getElementById(
+        "viewPrintOnly"
+    ).checked;
+
+const oneTimeDownloadSelected =
     document.getElementById(
         "oneTimeDownload"
     ).checked;
 
+const transferMode =
+    viewPrintSelected
+        ? "view_print"
+        : "download";
+
+
+
 
 /* ===== PIN FORMAT CHECK START ===== */
+if (filePin === "") {
+
+    showToast(
+        "error",
+        "PIN required",
+        "Please create a 4-digit security PIN before uploading."
+    );
+
+    document.getElementById(
+        "filePin"
+    ).focus();
+
+    return;
+}
 
 if (
-    filePin !== ""
-    &&
     !/^[0-9]{4}$/.test(
         filePin
     )
@@ -608,7 +719,6 @@ if (
     );
 
     return;
-
 }
 
 /* ===== PIN FORMAT CHECK END ===== */
@@ -666,19 +776,25 @@ if (
         );
 
         formData.append(
-            "expiry_time",
-            expiryTime
+            "transfer_mode",
+            transferMode
         );
 
-        formData.append(
-            "file_pin",
-            filePin
-        );
+       // ============================================================
+// ===== UPLOAD OPTIONS START =====
+// ============================================================
 
-        formData.append(
-            "one_time_download",
-            oneTimeDownload
-        );
+formData.append("expiry_time", expiryTime);
+formData.append("file_pin", filePin);
+formData.append("transfer_mode", transferMode);
+formData.append(
+    "one_time_download",
+    (!viewPrintSelected && oneTimeDownloadSelected) ? "true" : "false"
+);
+
+// ============================================================
+// ===== UPLOAD OPTIONS END =====
+// ============================================================
 
         const request =
             new XMLHttpRequest();
@@ -1290,7 +1406,25 @@ function resetUploadForm() {
 }
 
 /* ===== 15. RESET UPLOAD FORM END ===== */
+/* ========================================================= */
+/* ===== LIVE TRACKING REFERENCES START ===== */
+/* ========================================================= */
 
+const openTrackingButton =
+    document.getElementById("openTrackingButton");
+
+const trackingModal =
+    document.getElementById("trackingModal");
+
+const closeTrackingButton =
+    document.getElementById("closeTrackingButton");
+
+const trackingForm =
+    document.getElementById("trackingForm");
+
+/* ========================================================= */
+/* ===== LIVE TRACKING REFERENCES END ===== */
+/* ========================================================= */
 
 /* ===== 16. DOWNLOAD MODAL OPEN START ===== */
 
@@ -1349,7 +1483,61 @@ downloadModal.addEventListener(
 );
 
 /* ===== 17. DOWNLOAD MODAL CLOSE END ===== */
+/* ========================================================= */
+/* ===== LIVE TRACKING MODAL START ===== */
+/* ========================================================= */
 
+openTrackingButton.addEventListener(
+    "click",
+    function () {
+
+        trackingModal.classList.add(
+            "show"
+        );
+
+        document.body.style.overflow =
+            "hidden";
+
+    }
+);
+
+
+function closeTrackingModal() {
+
+    trackingModal.classList.remove(
+        "show"
+    );
+
+    document.body.style.overflow =
+        "";
+
+}
+
+
+closeTrackingButton.addEventListener(
+    "click",
+    closeTrackingModal
+);
+
+
+trackingModal.addEventListener(
+    "click",
+    function (event) {
+
+        if (
+            event.target === trackingModal
+        ) {
+
+            closeTrackingModal();
+
+        }
+
+    }
+);
+
+/* ========================================================= */
+/* ===== LIVE TRACKING MODAL END ===== */
+/* ========================================================= */
 
 /* ===== 18. ESCAPE KEY CLOSE START ===== */
 
@@ -1364,6 +1552,8 @@ document.addEventListener(
             closeSuccessModal();
 
             closeDownloadModal();
+
+            closeTrackingModal();
 
         }
 
@@ -1744,7 +1934,7 @@ let verifiedDownloadUrl = "";
 function showFileReadyModal(result) {
 
     verifiedDownloadUrl =
-        result.download_url;
+        result.action_url || result.download_url;
 
     readyFileName.textContent =
         result.filename;
@@ -1766,6 +1956,19 @@ function showFileReadyModal(result) {
         result.one_time_download
         ? "One-time download"
         : "Available until expiry";
+
+    // ⭐ NEW CODE
+    const actionButton =
+    document.getElementById(
+    "finalDownloadButton"
+    );
+
+    if (actionButton) {
+
+    actionButton.textContent =
+        result.action_label || "Download File";
+
+    }
 
     if (result.one_time_download) {
 
@@ -1789,7 +1992,6 @@ function showFileReadyModal(result) {
         "hidden";
 
 }
-
 
 function closeFileReadyModal() {
 
@@ -1976,4 +2178,480 @@ if (
 
 /* ========================================================= */
 /* ===== PIN SECURITY WARNING END ===== */
+/* ========================================================= */
+/* ========================================================= */
+/* ===== LIVE FILE TRACKING REQUEST START ===== */
+/* ========================================================= */
+
+trackingForm.addEventListener(
+    "submit",
+    async function (event) {
+
+        event.preventDefault();
+
+        const accessCode =
+            document
+                .getElementById(
+                    "trackingAccessCode"
+                )
+                .value
+                .trim();
+
+        if (
+            !/^[0-9]{6}$/.test(
+                accessCode
+            )
+        ) {
+
+            showToast(
+                "error",
+                "Invalid access code",
+                "Enter a valid 6-digit access code."
+            );
+
+            return;
+
+        }
+
+        const trackingButton =
+            trackingForm.querySelector(
+                ".access-file-button"
+            );
+
+        const originalButtonText =
+            trackingButton.textContent;
+
+        trackingButton.disabled =
+            true;
+
+        trackingButton.textContent =
+            "Checking Status...";
+
+        try {
+
+            const csrfToken =
+                document
+                    .querySelector(
+                        'meta[name="csrf-token"]'
+                    )
+                    ?.getAttribute(
+                        "content"
+                    );
+
+            const response =
+                await fetch(
+                    "/track-file",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            "X-CSRFToken":
+                                csrfToken
+                        },
+
+                        body: JSON.stringify(
+                            {
+                                access_code:
+                                    accessCode
+                            }
+                        )
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            if (!response.ok) {
+
+                showToast(
+                    "error",
+                    "Tracking failed",
+                    result.message
+                    ||
+                    "Unable to track this file."
+                );
+
+                return;
+
+            }
+
+            closeTrackingModal();
+
+trackingForm.reset();
+
+const trackingResultModal =
+    document.getElementById(
+        "trackingResultModal"
+    );
+
+const closeTrackingResultButton =
+    document.getElementById(
+        "closeTrackingResultButton"
+    );
+
+const trackingFileName =
+    document.getElementById(
+        "trackingFileName"
+    );
+
+const trackingFileSize =
+    document.getElementById(
+        "trackingFileSize"
+    );
+
+const trackingStatusBadge =
+    document.getElementById(
+        "trackingStatusBadge"
+    );
+
+const trackingProgressBar =
+    document.getElementById(
+        "trackingProgressBar"
+    );
+
+const trackingProgressPercent =
+    document.getElementById(
+        "trackingProgressPercent"
+    );
+
+const trackingUploadedTime =
+    document.getElementById(
+        "trackingUploadedTime"
+    );
+
+const trackingViewedStep =
+    document.getElementById(
+        "trackingViewedStep"
+    );
+
+const trackingViewedTime =
+    document.getElementById(
+        "trackingViewedTime"
+    );
+
+const trackingPrintedStep =
+    document.getElementById(
+        "trackingPrintedStep"
+    );
+
+const trackingPrintedTime =
+    document.getElementById(
+        "trackingPrintedTime"
+    );
+
+const trackingDownloadedStep =
+    document.getElementById(
+        "trackingDownloadedStep"
+    );
+
+const trackingDownloadedTime =
+    document.getElementById(
+        "trackingDownloadedTime"
+    );
+
+const trackingExpiresIn =
+    document.getElementById(
+        "trackingExpiresIn"
+    );
+
+const trackingViewCount =
+    document.getElementById(
+        "trackingViewCount"
+    );
+
+const trackingPrintCount =
+    document.getElementById(
+        "trackingPrintCount"
+    );
+
+const trackingDownloadCount =
+    document.getElementById(
+        "trackingDownloadCount"
+    );
+
+const trackingLastActivity =
+    document.getElementById(
+        "trackingLastActivity"
+    );
+
+
+trackingFileName.textContent =
+    result.filename;
+
+trackingFileSize.textContent =
+    formatFileSize(
+        result.file_size
+    );
+
+
+/* ===== STATUS ===== */
+
+trackingStatusBadge.textContent =
+    result.status === "expired"
+        ? "Expired"
+        : "Active";
+
+trackingStatusBadge.classList.toggle(
+    "expired",
+    result.status === "expired"
+);
+
+
+/* ===== UPLOADED ===== */
+
+trackingUploadedTime.textContent =
+    result.uploaded_at
+        ? new Date(
+            result.uploaded_at
+        ).toLocaleString()
+        : "-";
+
+
+/* ===== VIEWED ===== */
+
+if (
+    result.view_count > 0
+) {
+
+    trackingViewedStep.classList.add(
+        "completed"
+    );
+
+    trackingViewedTime.textContent =
+        result.last_viewed_at
+            ? new Date(
+                result.last_viewed_at
+            ).toLocaleString()
+            : "Viewed";
+
+} else {
+
+    trackingViewedStep.classList.remove(
+        "completed"
+    );
+
+    trackingViewedTime.textContent =
+        "Not viewed yet";
+
+}
+
+
+/* ===== PRINTED ===== */
+
+if (
+    result.print_count > 0
+) {
+
+    trackingPrintedStep.classList.add(
+        "completed"
+    );
+
+    trackingPrintedTime.textContent =
+        result.last_printed_at
+            ? new Date(
+                result.last_printed_at
+            ).toLocaleString()
+            : "Printed";
+
+} else {
+
+    trackingPrintedStep.classList.remove(
+        "completed"
+    );
+
+    trackingPrintedTime.textContent =
+        "Not printed yet";
+
+}
+
+
+/* ===== DOWNLOADED ===== */
+
+if (
+    result.download_count > 0
+) {
+
+    trackingDownloadedStep.classList.add(
+        "completed"
+    );
+
+    trackingDownloadedTime.textContent =
+        "Downloaded";
+
+} else {
+
+    trackingDownloadedStep.classList.remove(
+        "completed"
+    );
+
+    trackingDownloadedTime.textContent =
+        "Not downloaded yet";
+
+}
+
+
+/* ===== COUNTS ===== */
+
+trackingViewCount.textContent =
+    result.view_count || 0;
+
+trackingPrintCount.textContent =
+    result.print_count || 0;
+
+trackingDownloadCount.textContent =
+    result.download_count || 0;
+
+
+/* ===== EXPIRY ===== */
+
+const remainingSeconds =
+    result.remaining_seconds || 0;
+
+if (
+    remainingSeconds <= 0
+) {
+
+    trackingExpiresIn.textContent =
+        "Expired";
+
+} else {
+
+    const hours =
+        Math.floor(
+            remainingSeconds / 3600
+        );
+
+    const minutes =
+        Math.floor(
+            (
+                remainingSeconds % 3600
+            ) / 60
+        );
+
+    trackingExpiresIn.textContent =
+        hours > 0
+            ? `${hours}h ${minutes}m`
+            : `${minutes}m`;
+
+}
+
+
+/* ===== LAST ACTIVITY ===== */
+
+trackingLastActivity.textContent =
+    result.last_activity
+        ? new Date(
+            result.last_activity
+        ).toLocaleString()
+        : "No activity yet";
+
+
+/* ===== PROGRESS ===== */
+
+let completedSteps = 1;
+
+if (
+    result.view_count > 0
+) {
+    completedSteps++;
+}
+
+if (
+    result.print_count > 0
+) {
+    completedSteps++;
+}
+
+if (
+    result.download_count > 0
+) {
+    completedSteps++;
+}
+
+const progressPercent =
+    Math.round(
+        (
+            completedSteps / 4
+        ) * 100
+    );
+
+trackingProgressBar.style.width =
+    progressPercent + "%";
+
+trackingProgressPercent.textContent =
+    progressPercent + "%";
+
+
+/* ===== SHOW RESULT MODAL ===== */
+
+trackingResultModal.classList.add(
+    "show"
+);
+
+document.body.style.overflow =
+    "hidden";
+
+
+/* ===== CLOSE RESULT MODAL ===== */
+
+closeTrackingResultButton.onclick =
+    function () {
+
+        trackingResultModal.classList.remove(
+            "show"
+        );
+
+        document.body.style.overflow =
+            "";
+
+    };
+
+trackingResultModal.onclick =
+    function (event) {
+
+        if (
+            event.target === trackingResultModal
+        ) {
+
+            trackingResultModal.classList.remove(
+                "show"
+            );
+
+            document.body.style.overflow =
+                "";
+
+        }
+
+    };
+
+        } catch (error) {
+
+            console.error(
+                error
+            );
+
+            showToast(
+                "error",
+                "Connection failed",
+                "Could not connect to the Fyloq server."
+            );
+
+        } finally {
+
+            trackingButton.disabled =
+                false;
+
+            trackingButton.textContent =
+                originalButtonText;
+
+        }
+
+    }
+);
+
+/* ========================================================= */
+/* ===== LIVE FILE TRACKING REQUEST END ===== */
 /* ========================================================= */

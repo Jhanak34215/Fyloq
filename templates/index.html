@@ -191,6 +191,13 @@
                         Download File
 
                     </button>
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="openTrackingButton"
+                    >
+                        Live File Tracking
+                    </button>
 
                 </div>
 
@@ -626,16 +633,21 @@
                                 <div class="form-group">
 
                                     <label for="filePin">
-                                        Optional PIN
+                                        Security PIN
+                                        <span class="required-mark">*</span>
                                     </label>
 
                                         <input
                                             type="password"
                                             id="filePin"
+                                            name="file_pin"
+                                            minlength="4"
                                             maxlength="4"
                                             inputmode="numeric"
-                                            placeholder="4-digit PIN"
-                                            autocomplete="off"
+                                            pattern="[0-9]{4}"
+                                            placeholder="Create a strong 4-digit PIN"
+                                            autocomplete="new-password"
+                                            required
                                         >
 
                                         <!-- ==================================================== -->
@@ -673,28 +685,40 @@
                             </div>
 
                             <!-- ===== UPLOAD SETTINGS END ===== -->
+                            <!-- ====================================================== -->
+ <div class="upload-option">
+
+    <label class="checkbox-container">
+        <input
+            type="checkbox"
+            id="viewPrintOnly"
+        >
+        <span class="checkmark"></span>
+
+        <span>
+            View + Print Only
+        </span>
+    </label>
+
+</div>
+
+<div class="upload-option">
+
+    <label class="checkbox-container">
+        <input
+            type="checkbox"
+            id="oneTimeDownload"
+        >
+        <span class="checkmark"></span>
+
+        <span>
+            Delete file after first download
+        </span>
+    </label>
+
+</div>
 
 
-                            <!-- ===== ONE TIME DOWNLOAD START ===== -->
-
-                            <label class="one-time-option">
-
-                                <input
-                                    type="checkbox"
-                                    id="oneTimeDownload"
-                                >
-
-                                <span class="custom-checkbox"></span>
-
-                                <span>
-
-                                    Delete file after first download
-
-                                </span>
-
-                            </label>
-
-                            <!-- ===== ONE TIME DOWNLOAD END ===== -->
 
                             <!-- ===== UPLOAD PROGRESS START ===== -->
                              
@@ -1392,7 +1416,355 @@
     <!-- ====================================================== -->
     <!-- ===== DOWNLOAD MODAL END ===== -->
     <!-- ====================================================== -->
+     <!-- ====================================================== -->
+<!-- ===== LIVE TRACKING MODAL START ===== -->
+<!-- ====================================================== -->
 
+<div class="modal-overlay" id="trackingModal">
+
+    <div class="download-modal">
+
+        <button
+            type="button"
+            class="modal-close-button"
+            id="closeTrackingButton"
+        >
+            ×
+        </button>
+
+        <div class="modal-lock-icon">
+            📊
+        </div>
+
+        <h2>
+            Live File Tracking
+        </h2>
+
+        <p>
+            Enter your 6-digit access code to check the live status
+            of your file.
+        </p>
+
+        <form id="trackingForm">
+
+            <div class="modal-form-group">
+
+                <label for="trackingAccessCode">
+                    Access Code
+                </label>
+
+                <input
+                    type="text"
+                    id="trackingAccessCode"
+                    maxlength="6"
+                    inputmode="numeric"
+                    placeholder="Enter 6-digit code"
+                    required
+                >
+
+            </div>
+
+            <button
+                type="submit"
+                class="access-file-button"
+            >
+                Track File
+            </button>
+
+        </form>
+
+        <small>
+            Tracking does not provide access to the file.
+        </small>
+
+    </div>
+
+</div>
+
+<!-- ====================================================== -->
+<!-- ===== LIVE TRACKING MODAL END ===== -->
+<!-- ====================================================== -->
+<!-- ====================================================== -->
+<!-- ===== LIVE TRACKING RESULT MODAL START ===== -->
+<!-- ====================================================== -->
+
+<div
+    class="tracking-result-overlay"
+    id="trackingResultModal"
+>
+    <div class="tracking-result-card">
+
+        <!-- CLOSE BUTTON -->
+
+        <button
+            type="button"
+            class="tracking-result-close"
+            id="closeTrackingResultButton"
+        >
+            ×
+        </button>
+
+
+        <!-- HEADER -->
+
+        <div class="tracking-result-icon">
+            📊
+        </div>
+
+        <span class="tracking-result-label">
+            LIVE FILE STATUS
+        </span>
+
+        <h2>
+            File Tracking
+        </h2>
+
+        <p class="tracking-result-description">
+            Track the current activity and expiry status
+            of your shared file.
+        </p>
+
+
+        <!-- FILE INFORMATION -->
+
+        <div class="tracking-file-info">
+
+            <div class="tracking-file-icon">
+                📄
+            </div>
+
+            <div class="tracking-file-details">
+
+                <strong id="trackingFileName">
+                    document.pdf
+                </strong>
+
+                <span id="trackingFileSize">
+                    0 KB
+                </span>
+
+            </div>
+
+            <span
+                class="tracking-status-badge"
+                id="trackingStatusBadge"
+            >
+                Active
+            </span>
+
+        </div>
+
+
+        <!-- PROGRESS BAR -->
+
+        <div class="tracking-progress-section">
+
+            <div class="tracking-progress-header">
+
+                <span>
+                    File Journey
+                </span>
+
+                <strong id="trackingProgressPercent">
+                    25%
+                </strong>
+
+            </div>
+
+            <div class="tracking-progress-track">
+
+                <div
+                    class="tracking-progress-bar"
+                    id="trackingProgressBar"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TRACKING TIMELINE -->
+
+        <div class="tracking-timeline">
+
+            <!-- UPLOADED -->
+
+            <div
+                class="tracking-step completed"
+                id="trackingUploadedStep"
+            >
+                <div class="tracking-step-dot">
+                    ✓
+                </div>
+
+                <div>
+                    <strong>
+                        File Uploaded
+                    </strong>
+
+                    <span id="trackingUploadedTime">
+                        -
+                    </span>
+                </div>
+            </div>
+
+
+            <!-- VIEWED -->
+
+            <div
+                class="tracking-step"
+                id="trackingViewedStep"
+            >
+                <div class="tracking-step-dot">
+                    👁
+                </div>
+
+                <div>
+                    <strong>
+                        File Viewed
+                    </strong>
+
+                    <span id="trackingViewedTime">
+                        Not viewed yet
+                    </span>
+                </div>
+            </div>
+
+
+            <!-- PRINTED -->
+
+            <div
+                class="tracking-step"
+                id="trackingPrintedStep"
+            >
+                <div class="tracking-step-dot">
+                    🖨
+                </div>
+
+                <div>
+                    <strong>
+                        File Printed
+                    </strong>
+
+                    <span id="trackingPrintedTime">
+                        Not printed yet
+                    </span>
+                </div>
+            </div>
+
+
+            <!-- DOWNLOADED -->
+
+            <div
+                class="tracking-step"
+                id="trackingDownloadedStep"
+            >
+                <div class="tracking-step-dot">
+                    ↓
+                </div>
+
+                <div>
+                    <strong>
+                        File Downloaded
+                    </strong>
+
+                    <span id="trackingDownloadedTime">
+                        Not downloaded yet
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- DETAILS -->
+
+        <div class="tracking-details-grid">
+
+            <div class="tracking-detail-box">
+
+                <span>
+                    Expires In
+                </span>
+
+                <strong id="trackingExpiresIn">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div class="tracking-detail-box">
+
+                <span>
+                    Views
+                </span>
+
+                <strong id="trackingViewCount">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="tracking-detail-box">
+
+                <span>
+                    Prints
+                </span>
+
+                <strong id="trackingPrintCount">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="tracking-detail-box">
+
+                <span>
+                    Downloads
+                </span>
+
+                <strong id="trackingDownloadCount">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- LAST ACTIVITY -->
+
+        <div class="tracking-last-activity">
+
+            <span>
+                Last Activity
+            </span>
+
+            <strong id="trackingLastActivity">
+                No activity yet
+            </strong>
+
+        </div>
+
+
+        <!-- SECURITY NOTE -->
+
+        <div class="tracking-security-note">
+
+            🔒 Tracking mode only shows file activity.
+            The file cannot be opened or downloaded from this screen.
+
+        </div>
+
+    </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- ===== LIVE TRACKING RESULT MODAL END ===== -->
+<!-- ====================================================== -->
 <!-- ====================================================== -->
 <!-- ===== PROFESSIONAL TOAST NOTIFICATION START ===== -->
 <!-- ====================================================== -->

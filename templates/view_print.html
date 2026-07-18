@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+    >
+
+    <title>
+        View & Print - Fyloq
+    </title>
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/view_print.css') }}"
+    >
+
+</head>
+
+<body
+    data-file-type="{{ file_type }}"
+    data-content-url="{{ content_url }}"
+>
+
+    <!-- ====================================================== -->
+    <!-- ===== VIEW PRINT HEADER START ===== -->
+    <!-- ====================================================== -->
+
+    <header class="viewer-header">
+
+        <a
+            href="/"
+            class="viewer-brand"
+        >
+
+            <img
+                src="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+                alt="Fyloq"
+            >
+
+            <span>
+                Fyloq
+            </span>
+
+        </a>
+
+        <div class="secure-status">
+
+            <span class="secure-dot"></span>
+
+            Access verified
+
+        </div>
+
+    </header>
+
+    <!-- ====================================================== -->
+    <!-- ===== VIEW PRINT HEADER END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== VIEWER TOOLBAR START ===== -->
+    <!-- ====================================================== -->
+
+    <section class="viewer-toolbar">
+
+        <div class="file-information">
+
+            <div class="file-icon">
+
+                {% if file_type == "pdf" %}
+
+                    📕️
+
+                {% else %}
+
+                    🖼️
+
+                {% endif %}
+
+            </div>
+
+            <div>
+
+                <strong>
+                    {{ filename }}
+                </strong>
+
+                <span>
+                    Secure View + Print mode
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="viewer-actions">
+
+            <button
+                type="button"
+                class="print-button"
+                id="printFileButton"
+            >
+
+                <span>
+                    🖨️
+                </span>
+
+                Print File
+
+            </button>
+
+            <a
+                href="/"
+                class="close-viewer-button"
+            >
+                Close
+            </a>
+
+        </div>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- ===== VIEWER TOOLBAR END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== SECURITY NOTICE START ===== -->
+    <!-- ====================================================== -->
+
+    <div class="viewer-security-notice">
+
+        <span>
+            🔐
+        </span>
+
+        <p>
+
+            This file is available only for viewing and printing.
+            The normal download option has been disabled.
+
+        </p>
+
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- ===== SECURITY NOTICE END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== DOCUMENT VIEWER START ===== -->
+    <!-- ====================================================== -->
+
+    <main class="viewer-main">
+
+        <div
+            class="viewer-loading"
+            id="viewerLoading"
+        >
+
+            <div class="viewer-loader"></div>
+
+            <p>
+                Loading secure document...
+            </p>
+
+        </div>
+
+
+        <div
+            class="viewer-error"
+            id="viewerError"
+            hidden
+        >
+
+            <span>
+                ⚠️
+            </span>
+
+            <h2>
+                Unable to display file
+            </h2>
+
+            <p id="viewerErrorMessage">
+
+                The secure file could not be loaded.
+
+            </p>
+
+            <a href="/">
+                Return to Fyloq
+            </a>
+
+        </div>
+
+
+        {% if file_type == "pdf" %}
+
+            <iframe
+                id="secureDocumentViewer"
+                class="secure-document-viewer"
+                src="{{ content_url }}#toolbar=0&navpanes=0&scrollbar=1"
+                title="{{ filename }}"
+            ></iframe>
+
+        {% else %}
+
+            <div class="secure-image-container">
+
+                <img
+                    id="secureImageViewer"
+                    class="secure-image-viewer"
+                    src="{{ content_url }}"
+                    alt="{{ filename }}"
+                >
+
+            </div>
+
+        {% endif %}
+
+    </main>
+
+    <!-- ====================================================== -->
+    <!-- ===== DOCUMENT VIEWER END ===== -->
+    <!-- ====================================================== -->
+
+
+    <!-- ====================================================== -->
+    <!-- ===== FOOTER START ===== -->
+    <!-- ====================================================== -->
+
+    <footer class="viewer-footer">
+
+        <p>
+            File expires automatically at
+            <strong>
+                {{ expires_at }}
+            </strong>
+        </p>
+
+        <span>
+            © 2026 Fyloq
+        </span>
+
+    </footer>
+
+    <!-- ====================================================== -->
+    <!-- ===== FOOTER END ===== -->
+    <!-- ====================================================== -->
+
+
+    <div
+        class="viewer-toast"
+        id="viewerToast"
+    >
+
+        <span id="viewerToastIcon">
+            ✓
+        </span>
+
+        <p id="viewerToastMessage">
+            Ready
+        </p>
+
+    </div>
+
+
+    <script
+        src="{{ url_for('static', filename='js/view_print.js') }}"
+    ></script>
+
+</body>
+
+</html>

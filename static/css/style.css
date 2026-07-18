@@ -1120,6 +1120,7 @@ a{
 .secure-upload-button{
     width:100%;
     min-height:50px;
+    margin-top: 20px;
 
     display:flex;
     align-items:center;
@@ -3535,4 +3536,582 @@ a{
 
 /* ========================================================= */
 /* ===== FYLOQ BRAND FINAL OVERRIDES END ===== */
+/* ========================================================= */
+/* ===================================================== */
+
+
+.one-time-download-section {
+    margin-top: 26px;
+    padding-top: 24px;
+    border-top: 1px solid #303247;
+}
+
+.one-time-download-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    cursor: pointer;
+}
+
+.one-time-download-option.disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+
+/* =========================================================
+   MOBILE RESPONSIVE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .transfer-mode-card {
+        padding: 20px;
+        gap: 14px;
+    }
+
+    .transfer-mode-content strong,
+    .one-time-content strong {
+        font-size: 15px;
+    }
+
+    .transfer-mode-content small,
+    .one-time-content small {
+        font-size: 13px;
+    }
+
+}
+
+/* =========================================================
+   TRANSFER MODE DESIGN END
+========================================================= */
+/* ===== SIMPLE OPTIONS ===== */
+
+.upload-option{
+    margin-top:12px;
+}
+
+.checkbox-container{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    cursor:pointer;
+    color:#d8d8e5;
+    font-size:14px;
+    font-weight:500;
+}
+
+.checkbox-container input{
+    width:18px;
+    height:18px;
+    accent-color:#6d5dfc;
+    cursor:pointer;
+}
+
+.checkbox-container span:last-child{
+    line-height:18px;
+}
+
+/* ===== SIMPLE CHECKBOX ===== */
+
+.checkbox-container input{
+    width:18px;
+    height:18px;
+    cursor:pointer;
+    accent-color:transparent;
+}
+
+.checkbox-container input[type="checkbox"]{
+    appearance:none;
+    -webkit-appearance:none;
+
+    width:18px;
+    height:18px;
+
+    border:2px solid #7b7b8c;
+    border-radius:4px;
+
+    background:transparent;
+
+    cursor:pointer;
+
+    position:relative;
+}
+
+.checkbox-container input[type="checkbox"]:checked{
+    border-color:#7c5cff;
+    background:transparent;
+}
+
+.checkbox-container input[type="checkbox"]:checked::after{
+    content:"✓";
+
+    position:absolute;
+
+    left:2px;
+    top:-2px;
+
+    color:#7c5cff;
+
+    font-size:14px;
+    font-weight:bold;
+}
+
+/* ========================================================= */
+/* ===== LIVE FILE TRACKING RESULT START ===== */
+/* ========================================================= */
+
+.tracking-result-overlay{
+    width:100%;
+    height:100%;
+
+    display:none;
+    align-items:center;
+    justify-content:center;
+
+    position:fixed;
+    inset:0;
+    z-index:3600;
+
+    padding:20px;
+
+    overflow-y:auto;
+
+    background:rgba(10,9,25,0.82);
+
+    backdrop-filter:blur(9px);
+}
+
+.tracking-result-overlay.show{
+    display:flex;
+}
+
+.tracking-result-card{
+    width:100%;
+    max-width:560px;
+
+    position:relative;
+
+    margin:auto;
+    padding:36px;
+
+    background:#ffffff;
+    border:1px solid #e3e0f8;
+    border-radius:25px;
+
+    box-shadow:0 38px 85px rgba(13,11,38,0.40);
+}
+
+.tracking-result-close{
+    width:36px;
+    height:36px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    position:absolute;
+    top:17px;
+    right:17px;
+
+    background:#f1f0f8;
+    color:#6e6d7d;
+
+    border:none;
+    border-radius:10px;
+
+    font-size:22px;
+
+    cursor:pointer;
+}
+
+.tracking-result-icon{
+    width:62px;
+    height:62px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    margin:0 auto 16px;
+
+    background:#eeebff;
+    border-radius:18px;
+
+    font-size:27px;
+}
+
+.tracking-result-label{
+    display:block;
+
+    margin-bottom:7px;
+
+    color:#6757e7;
+
+    text-align:center;
+
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:2px;
+}
+
+.tracking-result-card h2{
+    margin-bottom:8px;
+
+    color:#1c1a30;
+
+    text-align:center;
+
+    font-size:28px;
+}
+
+.tracking-result-description{
+    margin-bottom:22px;
+
+    color:#777687;
+
+    text-align:center;
+
+    font-size:12px;
+    line-height:1.6;
+}
+
+
+/* ===== FILE INFO ===== */
+
+.tracking-file-info{
+    display:flex;
+    align-items:center;
+
+    margin-bottom:22px;
+    padding:14px;
+
+    background:#f8f7ff;
+    border:1px solid #e6e3f8;
+    border-radius:14px;
+}
+
+.tracking-file-icon{
+    width:46px;
+    height:46px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    background:#eae7ff;
+    border-radius:12px;
+
+    font-size:20px;
+}
+
+.tracking-file-details{
+    min-width:0;
+
+    display:flex;
+    flex:1;
+    flex-direction:column;
+
+    margin-left:12px;
+}
+
+.tracking-file-details strong{
+    overflow:hidden;
+
+    color:#292738;
+
+    font-size:13px;
+
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.tracking-file-details span{
+    margin-top:4px;
+
+    color:#858596;
+
+    font-size:10px;
+}
+
+.tracking-status-badge{
+    padding:7px 11px;
+
+    background:#e8f9f0;
+    color:#35ad72;
+
+    border-radius:999px;
+
+    font-size:10px;
+    font-weight:800;
+}
+
+
+/* ===== PROGRESS BAR ===== */
+
+.tracking-progress-section{
+    margin-bottom:25px;
+}
+
+.tracking-progress-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    margin-bottom:9px;
+}
+
+.tracking-progress-header span{
+    color:#555466;
+
+    font-size:11px;
+    font-weight:700;
+}
+
+.tracking-progress-header strong{
+    color:#6757e7;
+
+    font-size:11px;
+}
+
+.tracking-progress-track{
+    width:100%;
+    height:9px;
+
+    overflow:hidden;
+
+    background:#ebe9f7;
+    border-radius:20px;
+}
+
+.tracking-progress-bar{
+    width:25%;
+    height:100%;
+
+    background:linear-gradient(
+        90deg,
+        #6253e7,
+        #8a79f6
+    );
+
+    border-radius:20px;
+
+    transition:width 0.5s ease;
+}
+
+
+/* ===== TIMELINE ===== */
+
+.tracking-timeline{
+    margin-bottom:22px;
+}
+
+.tracking-step{
+    display:flex;
+    align-items:center;
+    gap:13px;
+
+    position:relative;
+
+    min-height:58px;
+}
+
+.tracking-step:not(:last-child)::after{
+    content:"";
+
+    width:2px;
+    height:24px;
+
+    position:absolute;
+    left:16px;
+    top:42px;
+
+    background:#e4e2ef;
+}
+
+.tracking-step-dot{
+    width:34px;
+    height:34px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    position:relative;
+    z-index:2;
+
+    background:#f1f0f7;
+    color:#9998a7;
+
+    border-radius:50%;
+
+    font-size:13px;
+    font-weight:800;
+}
+
+.tracking-step.completed .tracking-step-dot{
+    background:#e5f8ee;
+    color:#36b477;
+}
+
+.tracking-step.completed:not(:last-child)::after{
+    background:#72d5a4;
+}
+
+.tracking-step div:last-child{
+    display:flex;
+    flex-direction:column;
+}
+
+.tracking-step strong{
+    color:#373546;
+
+    font-size:12px;
+}
+
+.tracking-step span{
+    margin-top:4px;
+
+    color:#9291a0;
+
+    font-size:10px;
+}
+
+
+/* ===== DETAILS GRID ===== */
+
+.tracking-details-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+
+    gap:9px;
+
+    margin-bottom:15px;
+}
+
+.tracking-detail-box{
+    padding:12px 8px;
+
+    background:#fafaff;
+    border:1px solid #e9e7f7;
+    border-radius:11px;
+
+    text-align:center;
+}
+
+.tracking-detail-box span{
+    display:block;
+
+    margin-bottom:5px;
+
+    color:#8a8999;
+
+    font-size:8px;
+    font-weight:700;
+    text-transform:uppercase;
+}
+
+.tracking-detail-box strong{
+    color:#353344;
+
+    font-size:11px;
+}
+
+
+/* ===== LAST ACTIVITY ===== */
+
+.tracking-last-activity{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    margin-bottom:15px;
+    padding:12px 14px;
+
+    background:#f8f7ff;
+    border:1px solid #e8e5f8;
+    border-radius:11px;
+}
+
+.tracking-last-activity span{
+    color:#858494;
+
+    font-size:10px;
+}
+
+.tracking-last-activity strong{
+    color:#454354;
+
+    font-size:10px;
+}
+
+
+/* ===== SECURITY NOTE ===== */
+
+.tracking-security-note{
+    padding:12px;
+
+    background:#f1efff;
+    color:#686779;
+
+    border:1px solid #dfdbff;
+    border-radius:11px;
+
+    text-align:center;
+
+    font-size:9px;
+    line-height:1.6;
+}
+
+
+/* ===== EXPIRED STATUS ===== */
+
+.tracking-status-badge.expired{
+    background:#fff0f2;
+    color:#d84c65;
+}
+
+
+/* ===== MOBILE RESPONSIVE ===== */
+
+@media(max-width:560px){
+
+    .tracking-result-overlay{
+        align-items:flex-start;
+
+        padding:14px;
+    }
+
+    .tracking-result-card{
+        margin:15px auto;
+        padding:34px 18px 22px;
+
+        border-radius:20px;
+    }
+
+    .tracking-result-card h2{
+        font-size:24px;
+    }
+
+    .tracking-details-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .tracking-file-info{
+        flex-wrap:wrap;
+    }
+
+    .tracking-status-badge{
+        margin-top:10px;
+        margin-left:58px;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== LIVE FILE TRACKING RESULT END ===== */
 /* ========================================================= */
