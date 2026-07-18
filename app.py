@@ -24,6 +24,10 @@ from flask_wtf.csrf import (
     CSRFProtect
 )
 from dotenv import load_dotenv
+from database import (
+    get_database_connection,
+    is_sqlite_database
+)
 
 from flask import (
     Flask,
@@ -350,19 +354,6 @@ os.makedirs(
 # ===== 06. REQUIRED FOLDERS END =====
 
 
-# ===== 07. DATABASE CONNECTION START =====
-
-def get_database_connection():
-
-    connection = sqlite3.connect(
-        DATABASE_PATH
-    )
-
-    connection.row_factory = sqlite3.Row
-
-    return connection
-
-# ===== 07. DATABASE CONNECTION END =====
 
 
 # ===== 08. DATABASE TABLE CREATION START =====
@@ -5049,12 +5040,22 @@ def file_too_large(error):
 # ===== 34. APPLICATION INITIALIZATION START =====
 # ============================================================
 
-create_database()
+# SQLite backup/local mode me hi SQLite-specific
+# table creation aur PRAGMA migrations run hongi.
+#
+# Supabase PostgreSQL schema already SQL Editor
+# se safely create kiya gaya hai.
 
-migrate_database()
+if is_sqlite_database():
 
-create_support_requests_table()
+    create_database()
 
+    migrate_database()
+
+    create_support_requests_table()
+
+
+# Existing expiry cleanup logic preserve rahega.
 cleanup_expired_files()
 
 # ============================================================
