@@ -4115,3 +4115,394 @@ a{
 /* ========================================================= */
 /* ===== LIVE FILE TRACKING RESULT END ===== */
 /* ========================================================= */
+/* ========================================================= */
+/* ===== FYLOQ FINAL MOBILE RESPONSIVE FIX START ===== */
+/* ========================================================= */
+
+@media (max-width: 560px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* ===== NAVBAR ===== */
+
+    .navbar {
+        width: 100%;
+        padding: 0 14px;
+        gap: 8px;
+    }
+
+    .brand {
+        min-width: 0;
+    }
+
+    .brand-name {
+        font-size: 18px;
+    }
+
+    .nav-upload-button {
+        flex-shrink: 0;
+        padding: 9px 11px;
+        font-size: 11px;
+    }
+
+
+    /* ===== HERO ===== */
+
+    .hero {
+        width: 100%;
+        padding: 40px 16px 25px;
+    }
+
+    .hero-left,
+    .hero-right {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .hero-left h1 {
+        width: 100%;
+        font-size: 36px;
+        line-height: 1.12;
+        word-break: normal;
+    }
+
+    .hero-description {
+        width: 100%;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .hero-buttons {
+        width: 100%;
+    }
+
+    .hero-right {
+        min-height: 300px;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .hero-illustration {
+        width: 440px;
+        max-width: none;
+        height: 390px;
+
+        transform: scale(0.68);
+        transform-origin: center center;
+    }
+
+
+    /* ===== FEATURE STRIP ===== */
+
+    .features-strip {
+        width: calc(100% - 24px);
+
+        margin: 0 12px 55px;
+        padding: 14px;
+    }
+
+    .feature-strip-item {
+        width: 100%;
+        min-width: 0;
+        padding: 10px;
+    }
+
+
+    /* ===== UPLOAD SECTION ===== */
+
+    .upload-section {
+        width: 100%;
+        padding: 18px 12px 60px;
+    }
+
+    .upload-dashboard {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px;
+    }
+
+    .dashboard-topbar {
+        min-height: 60px;
+        padding: 0 12px;
+        gap: 8px;
+    }
+
+    .dashboard-brand {
+        min-width: 0;
+        font-size: 13px;
+    }
+
+    .dashboard-security {
+        flex-shrink: 0;
+        gap: 5px;
+        font-size: 8px;
+    }
+
+    .dashboard-body {
+        width: 100%;
+        padding: 22px 12px;
+        gap: 25px;
+    }
+
+    .dashboard-left-panel h3 {
+        font-size: 29px;
+    }
+
+    .dashboard-left-panel p {
+        font-size: 13px;
+    }
+
+    .dashboard-upload-card {
+        width: 100%;
+        min-width: 0;
+        padding: 12px;
+    }
+
+    .file-drop-area {
+        width: 100%;
+        min-height: 210px;
+        padding: 18px 10px;
+    }
+
+    .selected-file {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .selected-file-details {
+        min-width: 0;
+    }
+
+    .form-group,
+    .form-group input,
+    .form-group select {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+
+    /* ===== ALL MODAL OVERLAYS ===== */
+
+    .modal-overlay,
+    .success-modal-overlay,
+    .file-ready-overlay,
+    .tracking-result-overlay {
+        width: 100%;
+        min-height: 100dvh;
+        height: 100dvh;
+
+        padding: 10px;
+
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+
+    /* ===== DOWNLOAD MODAL ===== */
+
+    .download-modal {
+        width: 100%;
+        max-width: calc(100vw - 20px);
+
+        margin: auto;
+        padding: 35px 16px 22px;
+
+        border-radius: 18px;
+    }
+
+    .download-modal h2 {
+        font-size: 23px;
+    }
+
+
+    /* ===== SUCCESS MODAL ===== */
+
+    .success-modal {
+        width: 100%;
+        max-width: calc(100vw - 20px);
+
+        margin: 10px auto;
+        padding: 32px 14px 20px;
+
+        border-radius: 18px;
+    }
+
+    .success-check-icon {
+        width: 58px;
+        height: 58px;
+
+        font-size: 29px;
+    }
+
+    .success-modal h2 {
+        font-size: 22px;
+        line-height: 1.25;
+    }
+
+    .success-file-card {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .success-file-info {
+        min-width: 0;
+    }
+
+
+    /* ===== ACCESS CODE ===== */
+
+    .access-code-box {
+        width: 100%;
+
+        gap: 8px;
+        padding: 10px 10px 10px 13px;
+    }
+
+    .access-code-box strong {
+        min-width: 0;
+
+        font-size: 21px;
+        letter-spacing: 4px;
+    }
+
+    .copy-code-button {
+        min-width: 62px;
+        height: 38px;
+
+        flex-shrink: 0;
+
+        font-size: 11px;
+    }
+
+
+    /* ===== QR + TIMER ===== */
+
+    .success-qr-timer {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .success-qr-box,
+    .success-timer-box {
+        width: 100%;
+        min-height: 155px;
+    }
+
+
+    /* ===== FILE READY ===== */
+
+    .file-ready-card {
+        width: 100%;
+        max-width: calc(100vw - 20px);
+
+        margin: auto;
+        padding: 34px 14px 20px;
+
+        border-radius: 18px;
+    }
+
+    .file-ready-info {
+        min-width: 0;
+    }
+
+    .file-ready-document-details {
+        min-width: 0;
+    }
+
+
+    /* ===== TRACKING RESULT ===== */
+
+    .tracking-result-card {
+        width: 100%;
+        max-width: calc(100vw - 20px);
+
+        margin: 10px auto;
+        padding: 32px 14px 20px;
+
+        border-radius: 18px;
+    }
+
+    .tracking-file-info {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .tracking-file-details {
+        min-width: 0;
+    }
+
+    .tracking-details-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .tracking-last-activity {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .tracking-status-badge {
+        margin-left: 58px;
+    }
+
+
+    /* ===== TOAST ===== */
+
+    .toast-notification {
+        width: calc(100% - 20px);
+
+        top: 76px;
+        left: 10px;
+        right: 10px;
+    }
+
+
+    /* ===== FOOTER ===== */
+
+    .main-footer {
+        width: 100%;
+        padding: 40px 16px 20px;
+    }
+
+    .main-footer-grid {
+        width: 100%;
+    }
+
+}
+
+
+/* EXTRA SMALL MOBILE */
+
+@media (max-width: 380px) {
+
+    .hero-left h1 {
+        font-size: 32px;
+    }
+
+    .hero-illustration {
+        transform: scale(0.60);
+    }
+
+    .access-code-box strong {
+        font-size: 19px;
+        letter-spacing: 3px;
+    }
+
+    .copy-code-button {
+        min-width: 58px;
+    }
+
+    .tracking-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+/* ========================================================= */
+/* ===== FYLOQ FINAL MOBILE RESPONSIVE FIX END ===== */
+/* ========================================================= */
