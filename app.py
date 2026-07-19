@@ -2855,6 +2855,8 @@ def admin_expire_file(file_id):
             url_for("admin_login")
         )
 
+    # ===== GET FILE RECORD START =====
+
     connection = get_database_connection()
 
     file_record = connection.execute(
@@ -2866,9 +2868,9 @@ def admin_expire_file(file_id):
         (file_id,)
     ).fetchone()
 
-    if file_record is None:
+    connection.close()
 
-        connection.close()
+    if file_record is None:
 
         return redirect(
             url_for(
@@ -2879,8 +2881,6 @@ def admin_expire_file(file_id):
 
     if file_record["status"] != "active":
 
-        connection.close()
-
         return redirect(
             url_for(
                 "admin_dashboard",
@@ -2888,22 +2888,93 @@ def admin_expire_file(file_id):
             )
         )
 
-    delete_file_from_storage(
-        file_record["stored_filename"]
-    )
+    # ===== GET FILE RECORD END =====
 
-    connection.execute(
-        """
-        UPDATE files
-        SET status = 'expired'
-        WHERE id = ?
-        """,
-        (file_id,)
-    )
 
-    connection.commit()
+    # ===== SUPABASE STORAGE DELETE START =====
 
-    connection.close()
+    try:
+
+        delete_file_from_storage(
+            file_record["stored_filename"]
+        )
+
+    except Exception as error:
+
+        error_text = str(error).lower()
+
+        if not (
+            "404" in error_text
+            or
+            "not found" in error_text
+        ):
+
+            print(
+                "Admin expire Storage delete failed:",
+                error
+            )
+
+            return redirect(
+                url_for(
+                    "admin_dashboard",
+                    message=(
+                        "File could not be expired because "
+                        "Storage deletion failed."
+                    )
+                )
+            )
+
+    # ===== SUPABASE STORAGE DELETE END =====
+
+
+    # ===== DATABASE STATUS UPDATE START =====
+
+    connection = get_database_connection()
+
+    try:
+
+        connection.execute(
+            """
+            UPDATE files
+            SET status = 'expired'
+            WHERE id = ?
+            """,
+            (file_id,)
+        )
+
+        connection.commit()
+
+    except Exception as error:
+
+        try:
+
+            connection.rollback()
+
+        except Exception:
+
+            pass
+
+        print(
+            "Admin expire database update failed:",
+            error
+        )
+
+        return redirect(
+            url_for(
+                "admin_dashboard",
+                message=(
+                    "File was removed from Storage, "
+                    "but database status update failed."
+                )
+            )
+        )
+
+    finally:
+
+        connection.close()
+
+    # ===== DATABASE STATUS UPDATE END =====
+
 
     return redirect(
         url_for(

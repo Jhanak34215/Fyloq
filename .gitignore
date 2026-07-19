@@ -69,3 +69,11 @@ dist/
 build/
 
 # ===== TEST AND BUILD FILES END =====
+
+.env
+venv/
+__pycache__/
+*.pyc
+uploads/
+instance/
+*.db
