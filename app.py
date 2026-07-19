@@ -4333,7 +4333,7 @@ def upload_file():
             ),
 
             "expires_at_iso": (
-                expires_at.isoformat()
+                expires_at.astimezone().isoformat()
             ),
 
                        "one_time_download": bool(

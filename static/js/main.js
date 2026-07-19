@@ -1220,7 +1220,9 @@ function showUploadSuccess(result) {
         : "Not enabled";
 
     successExpiry.textContent =
-        result.expires_at;
+        new Date(
+            result.expires_at_iso
+        ).toLocaleString();
 
     successDownloadType.textContent =
         result.one_time_download
