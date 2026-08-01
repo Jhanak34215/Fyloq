@@ -33,7 +33,10 @@ from storage import (
     download_file_from_storage,
     delete_file_from_storage
 )
-
+from file_encryption import (
+    encrypt_file_data,
+    decrypt_file_data
+)
 from flask import (
     Flask,
     jsonify,
@@ -545,7 +548,76 @@ def migrate_database():
             ADD COLUMN last_printed_at TEXT
             """
         )
+    # ============================================================
+    # ===== FILE ENCRYPTION DATABASE MIGRATION START =====
+    # ============================================================
 
+    if "encryption_algorithm" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN encryption_algorithm TEXT
+            """
+        )
+
+    if "encryption_version" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN encryption_version INTEGER
+            """
+        )
+
+    if "encryption_key_version" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN encryption_key_version INTEGER
+            """
+        )
+
+    if "file_nonce" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN file_nonce TEXT
+            """
+        )
+
+    if "wrapped_data_key" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN wrapped_data_key TEXT
+            """
+        )
+
+    if "key_wrap_nonce" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN key_wrap_nonce TEXT
+            """
+        )
+
+    if "encrypted_size" not in existing_columns:
+
+        connection.execute(
+            """
+            ALTER TABLE files
+            ADD COLUMN encrypted_size INTEGER
+            """
+        )
+
+    # ============================================================
+    # ===== FILE ENCRYPTION DATABASE MIGRATION END =====
+    # ============================================================
     # Purani uploaded files automatically normal
     # download mode me rahengi.
     connection.execute(
@@ -4140,13 +4212,54 @@ def upload_file():
 
     access_code = generate_access_code()
 
-    # ============================================================
-    # ===== SUPABASE STORAGE UPLOAD START =====
+        # ============================================================
+    # ===== APPLICATION-LEVEL FILE ENCRYPTION START =====
     # ============================================================
 
-    content_type = (
-        uploaded_file.mimetype
-        or
+    try:
+
+        encryption_key_version = int(
+            os.getenv(
+                "FILE_ENCRYPTION_KEY_VERSION",
+                "1"
+            )
+        )
+
+        encrypted_file = encrypt_file_data(
+            file_data=file_data,
+            stored_filename=stored_filename,
+            encryption_key_version=(
+                encryption_key_version
+            )
+        )
+
+    except Exception as error:
+
+        print(
+            "File encryption failed:",
+            error
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "message": (
+                    "File encryption failed. "
+                    "Please try again."
+                )
+            }
+        ), 500
+
+    # ============================================================
+    # ===== APPLICATION-LEVEL FILE ENCRYPTION END =====
+    # ============================================================
+
+
+    # ============================================================
+    # ===== ENCRYPTED SUPABASE STORAGE UPLOAD START =====
+    # ============================================================
+
+    encrypted_content_type = (
         "application/octet-stream"
     )
 
@@ -4154,14 +4267,14 @@ def upload_file():
 
         upload_file_to_storage(
             stored_filename,
-            file_data,
-            content_type
+            encrypted_file.encrypted_data,
+            encrypted_content_type
         )
 
     except Exception as error:
 
         print(
-            "Supabase Storage upload failed:",
+            "Encrypted Storage upload failed:",
             error
         )
 
@@ -4176,9 +4289,8 @@ def upload_file():
         ), 500
 
     # ============================================================
-    # ===== SUPABASE STORAGE UPLOAD END =====
+    # ===== ENCRYPTED SUPABASE STORAGE UPLOAD END =====
     # ============================================================
-
 
     # ============================================================
     # ===== DATABASE RECORD INSERT START =====
@@ -4212,12 +4324,20 @@ def upload_file():
                 view_count,
                 last_viewed_at,
                 print_count,
-                last_printed_at
+                last_printed_at,
+                encryption_algorithm,
+                encryption_version,
+                encryption_key_version,
+                file_nonce,
+                wrapped_data_key,
+                key_wrap_nonce,
+                encrypted_size
 
             )
             VALUES (
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?
             )
             """,
             (
@@ -4239,7 +4359,14 @@ def upload_file():
                 0,
                 None,
                 0,
-                None
+                None,
+                encrypted_file.encryption_algorithm,
+                encrypted_file.encryption_version,
+                encrypted_file.encryption_key_version,
+                encrypted_file.file_nonce,
+                encrypted_file.wrapped_data_key,
+                encrypted_file.key_wrap_nonce,
+                encrypted_file.encrypted_size
             )
         )
 
@@ -5202,7 +5329,48 @@ def view_print_content(access_code):
     # ============================================================
     # ===== SUPABASE VIEW FILE FETCH END =====
     # ============================================================
+    # ============================================================
+    # ===== VIEW + PRINT FILE DECRYPTION START =====
+    # ============================================================
 
+    try:
+
+        file_data = decrypt_file_data(
+            encrypted_data=file_data,
+
+            stored_filename=(
+                file_record["stored_filename"]
+            ),
+
+            file_nonce=(
+                file_record["file_nonce"]
+            ),
+
+            wrapped_data_key=(
+                file_record["wrapped_data_key"]
+            ),
+
+            key_wrap_nonce=(
+                file_record["key_wrap_nonce"]
+            )
+        )
+
+    except Exception as error:
+
+        print(
+            "View + Print file decryption failed:",
+            error
+        )
+
+        return (
+            "File security verification failed. "
+            "The file cannot be displayed.",
+            500
+        )
+
+    # ============================================================
+    # ===== VIEW + PRINT FILE DECRYPTION END =====
+    # ============================================================
     file_extension = (
         file_record["file_extension"]
         .lower()
@@ -5454,7 +5622,48 @@ def download_file(access_code):
     # ===== SUPABASE PRIVATE STORAGE DOWNLOAD END =====
     # ============================================================
 
+    # ============================================================
+    # ===== APPLICATION-LEVEL FILE DECRYPTION START =====
+    # ============================================================
 
+    try:
+
+        file_data = decrypt_file_data(
+            encrypted_data=file_data,
+
+            stored_filename=(
+                file_record["stored_filename"]
+            ),
+
+            file_nonce=(
+                file_record["file_nonce"]
+            ),
+
+            wrapped_data_key=(
+                file_record["wrapped_data_key"]
+            ),
+
+            key_wrap_nonce=(
+                file_record["key_wrap_nonce"]
+            )
+        )
+
+    except Exception as error:
+
+        print(
+            "File decryption failed:",
+            error
+        )
+
+        return (
+            "File security verification failed. "
+            "The file cannot be downloaded.",
+            500
+        )
+
+    # ============================================================
+    # ===== APPLICATION-LEVEL FILE DECRYPTION END =====
+    # ============================================================
     # ============================================================
     # ===== DOWNLOAD DATABASE UPDATE START =====
     # ============================================================
