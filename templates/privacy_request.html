@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Submit a personal data rights request to Fyloq."
+    >
+
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
+
+    <title>Privacy Request | Fyloq</title>
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/legal.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <header class="legal-navbar">
+
+        <a
+            href="/"
+            class="legal-brand"
+        >
+
+            <img
+                src="{{ url_for('static', filename='images/fyloq-logo.svg') }}"
+                alt="Fyloq"
+                style="width: 145px; height: auto;"
+            >
+
+        </a>
+
+        <nav class="legal-nav-links">
+
+            <a href="/privacy">
+                Privacy
+            </a>
+
+            <a
+                href="/privacy-request"
+                class="active"
+            >
+                Privacy Request
+            </a>
+
+            <a href="/terms">
+                Terms
+            </a>
+
+            <a href="/support">
+                Support
+            </a>
+
+        </nav>
+
+        <a
+            href="/"
+            class="legal-navbar-button"
+        >
+            Return Home
+        </a>
+
+    </header>
+
+
+    <section class="legal-hero">
+
+        <span class="legal-page-label">
+            DATA PROTECTION
+        </span>
+
+        <h1>
+            Privacy Rights Request
+        </h1>
+
+        <p>
+
+            Use this form to request access, correction, deletion,
+            restriction, objection or portability of personal data
+            associated with Fyloq.
+
+        </p>
+
+        <div class="legal-document-information">
+
+            <span>
+                Secure submission
+            </span>
+
+            <span>
+                Identity verification may be required
+            </span>
+
+            <span>
+                Request reference provided
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <main class="legal-main-layout">
+
+        <aside class="legal-sidebar">
+
+            <div class="legal-sidebar-card">
+
+                <span class="legal-sidebar-title">
+                    YOUR RIGHTS
+                </span>
+
+                <nav class="legal-table-of-contents">
+
+                    <a href="#request-form">
+                        Submit request
+                    </a>
+
+                    <a href="#request-types">
+                        Request types
+                    </a>
+
+                    <a href="#identity-check">
+                        Identity verification
+                    </a>
+
+                    <a href="#important-information">
+                        Important information
+                    </a>
+
+                </nav>
+
+            </div>
+
+
+            <div class="legal-help-card">
+
+                <div class="legal-help-icon">
+                    ?
+                </div>
+
+                <h3>
+                    Need help?
+                </h3>
+
+                <p>
+
+                    Contact Fyloq support if you are unsure which
+                    privacy request type to select.
+
+                </p>
+
+                <a href="/support">
+                    Open Support
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <section class="legal-document">
+
+            {% if success_message %}
+
+                <div class="legal-message legal-message-success">
+
+                    <span>
+                        ✓
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Privacy request submitted
+                        </strong>
+
+                        <p>
+                            {{ success_message }}
+                        </p>
+
+                        {% if request_reference %}
+
+                            <p>
+
+                                Reference:
+
+                                <strong>
+                                    {{ request_reference }}
+                                </strong>
+
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            {% if error_message %}
+
+                <div class="legal-message legal-message-error">
+
+                    <span>
+                        !
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Request could not be submitted
+                        </strong>
+
+                        <p>
+                            {{ error_message }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="legal-highlight-box">
+
+                <div class="legal-highlight-icon">
+                    🔐
+                </div>
+
+                <div>
+
+                    <strong>
+                        Your information will be used only to process this request
+                    </strong>
+
+                    <p>
+
+                        Do not include your file PIN, passwords, payment
+                        information, government identity numbers or unnecessary
+                        sensitive information in this form.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <section
+                class="legal-section"
+                id="request-form"
+            >
+
+                <span class="legal-section-number">
+                    01
+                </span>
+
+                <h2>
+                    Submit your request
+                </h2>
+
+                <form
+                    method="POST"
+                    action="/privacy-request"
+                    class="legal-form"
+                >
+
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
+
+
+                    <div class="legal-form-grid">
+
+                        <div class="legal-form-group">
+
+                            <label for="full_name">
+                                Full name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="full_name"
+                                name="full_name"
+                                maxlength="80"
+                                autocomplete="name"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="legal-form-group">
+
+                            <label for="email">
+                                Email address
+                            </label>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                maxlength="120"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legal-form-grid">
+
+                        <div class="legal-form-group">
+
+                            <label for="request_type">
+                                Request type
+                            </label>
+
+                            <select
+                                id="request_type"
+                                name="request_type"
+                                required
+                            >
+
+                                <option value="">
+                                    Select a privacy request
+                                </option>
+
+                                <option value="access">
+                                    Access my personal data
+                                </option>
+
+                                <option value="rectification">
+                                    Correct my personal data
+                                </option>
+
+                                <option value="erasure">
+                                    Delete my personal data
+                                </option>
+
+                                <option value="restriction">
+                                    Restrict processing
+                                </option>
+
+                                <option value="objection">
+                                    Object to processing
+                                </option>
+
+                                <option value="portability">
+                                    Receive a portable copy
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="legal-form-group">
+
+                            <label for="access_code">
+                                Fyloq access code
+                            </label>
+
+                            <input
+                                type="text"
+                                id="access_code"
+                                name="access_code"
+                                maxlength="6"
+                                inputmode="numeric"
+                                pattern="[0-9]{6}"
+                                placeholder="Optional 6-digit code"
+                            >
+
+                            <small>
+                                Enter only when your request relates to a Fyloq file.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legal-form-group">
+
+                        <label for="request_details">
+                            Request details
+                        </label>
+
+                        <textarea
+                            id="request_details"
+                            name="request_details"
+                            maxlength="3000"
+                            required
+                            placeholder="Explain what personal data or processing activity your request relates to."
+                        ></textarea>
+
+                        <small>
+                            Maximum 3000 characters. Never enter your file PIN.
+                        </small>
+
+                    </div>
+
+
+                    <label class="support-consent">
+
+                        <input
+                            type="checkbox"
+                            name="declaration"
+                            value="yes"
+                            required
+                        >
+
+                        <span class="support-custom-checkbox"></span>
+
+                        <span>
+
+                            I confirm that the information provided is accurate
+                            and that I am submitting this request for myself or
+                            as an authorised representative.
+
+                        </span>
+
+                    </label>
+
+
+                    <button
+                        type="submit"
+                        class="legal-submit-button"
+                    >
+                        Submit Privacy Request
+                    </button>
+
+                </form>
+
+            </section>
+
+
+            <section
+                class="legal-section"
+                id="request-types"
+            >
+
+                <span class="legal-section-number">
+                    02
+                </span>
+
+                <h2>
+                    Available request types
+                </h2>
+
+                <div class="legal-information-grid">
+
+                    <div class="legal-information-item">
+
+                        <span>
+                            📄
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Access
+                            </h3>
+
+                            <p>
+                                Request information about personal data Fyloq processes.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legal-information-item">
+
+                        <span>
+                            ✏️
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Rectification
+                            </h3>
+
+                            <p>
+                                Request correction of inaccurate personal information.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legal-information-item">
+
+                        <span>
+                            🗑️
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Erasure
+                            </h3>
+
+                            <p>
+                                Request deletion where continued retention is not required.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legal-information-item">
+
+                        <span>
+                            ⏸️
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Restriction
+                            </h3>
+
+                            <p>
+                                Request temporary limitation of certain processing.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legal-information-item">
+
+                        <span>
+                            ✋
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Objection
+                            </h3>
+
+                            <p>
+                                Object to eligible processing activities.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legal-information-item">
+
+                        <span>
+                            📦
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Portability
+                            </h3>
+
+                            <p>
+                                Request eligible data in a structured electronic format.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section
+                class="legal-section"
+                id="identity-check"
+            >
+
+                <span class="legal-section-number">
+                    03
+                </span>
+
+                <h2>
+                    Identity verification
+                </h2>
+
+                <p>
+
+                    Fyloq may request limited additional information when
+                    reasonably necessary to verify identity and prevent
+                    unauthorised disclosure or deletion of personal data.
+
+                </p>
+
+                <div class="legal-warning-box">
+
+                    <strong>
+                        An access code alone may not prove identity
+                    </strong>
+
+                    <p>
+
+                        Do not send your PIN through this form. Fyloq will use
+                        proportionate verification steps based on the type and
+                        sensitivity of the requested data.
+
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <section
+                class="legal-section"
+                id="important-information"
+            >
+
+                <span class="legal-section-number">
+                    04
+                </span>
+
+                <h2>
+                    Important information
+                </h2>
+
+                <ul class="legal-list">
+
+                    <li>
+                        Submitting a request does not automatically guarantee deletion.
+                    </li>
+
+                    <li>
+                        Some information may need to be retained for security,
+                        legal claims or abuse investigations.
+                    </li>
+
+                    <li>
+                        Fyloq may ask for clarification when the request is incomplete.
+                    </li>
+
+                    <li>
+                        A unique reference number will be generated after submission.
+                    </li>
+
+                </ul>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+    <footer class="legal-footer">
+
+        <div class="legal-footer-grid">
+
+            <div class="legal-footer-brand">
+
+                <a href="/">
+
+                    <img
+                        src="{{ url_for('static', filename='images/fyloq-logo.svg') }}"
+                        alt="Fyloq"
+                        style="width: 145px; height: auto;"
+                    >
+
+                </a>
+
+                <p>
+                    Secure temporary file sharing with controlled access and expiry.
+                </p>
+
+            </div>
+
+
+            <div class="legal-footer-column">
+
+                <h4>
+                    Privacy
+                </h4>
+
+                <a href="/privacy">
+                    Privacy Policy
+                </a>
+
+                <a href="/privacy-request">
+                    Privacy Request
+                </a>
+
+            </div>
+
+
+            <div class="legal-footer-column">
+
+                <h4>
+                    Legal
+                </h4>
+
+                <a href="/terms">
+                    Terms
+                </a>
+
+                <a href="/legal">
+                    Legal Notice
+                </a>
+
+            </div>
+
+
+            <div class="legal-footer-column">
+
+                <h4>
+                    Assistance
+                </h4>
+
+                <a href="/support">
+                    Support
+                </a>
+
+                <a href="/report-abuse">
+                    Report Abuse
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="legal-footer-bottom">
+
+            <span>
+                © 2026 Fyloq
+            </span>
+
+            <span>
+                Privacy request submission page
+            </span>
+
+        </div>
+
+    </footer>
+
+</body>
+
+</html>

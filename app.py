@@ -313,6 +313,41 @@ FYLOQ_STORAGE_LIMIT = (
 # ===== FYLOQ STORAGE LIMIT END =====
 # ============================================================
 # ============================================================
+# ===== GDPR DATA RETENTION SETTINGS START =====
+# ============================================================
+
+SUPPORT_RETENTION_DAYS = int(
+    os.getenv(
+        "SUPPORT_RETENTION_DAYS",
+        "180"
+    )
+)
+
+ABUSE_RETENTION_DAYS = int(
+    os.getenv(
+        "ABUSE_RETENTION_DAYS",
+        "365"
+    )
+)
+
+PRIVACY_REQUEST_RETENTION_DAYS = int(
+    os.getenv(
+        "PRIVACY_REQUEST_RETENTION_DAYS",
+        "730"
+    )
+)
+
+AUDIT_LOG_RETENTION_DAYS = int(
+    os.getenv(
+        "AUDIT_LOG_RETENTION_DAYS",
+        "730"
+    )
+)
+
+# ============================================================
+# ===== GDPR DATA RETENTION SETTINGS END =====
+# ============================================================
+# ============================================================
 # ===== FILE PIN SECURITY SETTINGS END =====
 # ============================================================
 
@@ -1345,7 +1380,193 @@ def permanently_delete_expired_files():
 # ===== PERMANENT EXPIRED RECORD CLEANUP END =====
 # ============================================================
 
+# ============================================================
+# ===== GDPR PERSONAL DATA RETENTION CLEANUP START =====
+# ============================================================
 
+def cleanup_expired_personal_data():
+
+    current_time = datetime.now().isoformat()
+
+    connection = None
+
+    cleanup_counts = {
+        "support_anonymized": 0,
+        "abuse_anonymized": 0,
+        "privacy_anonymized": 0,
+        "audit_deleted": 0
+    }
+
+    try:
+
+        connection = get_database_connection()
+
+
+        # ====================================================
+        # ===== SUPPORT REQUEST ANONYMIZATION START =====
+        # ====================================================
+
+        support_cursor = connection.execute(
+            """
+            UPDATE support_requests
+
+            SET
+                name = 'Anonymized User',
+                email = 'anonymized@invalid.local',
+                access_code = NULL,
+                subject = 'Anonymized support request',
+                message = 'Personal data removed after retention period.',
+                anonymized_at = ?
+
+            WHERE
+                retention_until IS NOT NULL
+                AND retention_until <= ?
+                AND anonymized_at IS NULL
+            """,
+            (
+                current_time,
+                current_time
+            )
+        )
+
+        cleanup_counts[
+            "support_anonymized"
+        ] = support_cursor.rowcount or 0
+
+        # ====================================================
+        # ===== SUPPORT REQUEST ANONYMIZATION END =====
+        # ====================================================
+
+
+        # ====================================================
+        # ===== ABUSE REPORT ANONYMIZATION START =====
+        # ====================================================
+
+        abuse_cursor = connection.execute(
+            """
+            UPDATE report_abuse
+
+            SET
+                full_name = 'Anonymized User',
+                email = 'anonymized@invalid.local',
+                access_code = NULL,
+                subject = 'Anonymized abuse report',
+                description = 'Personal data removed after retention period.',
+                anonymized_at = ?
+
+            WHERE
+                retention_until IS NOT NULL
+                AND retention_until <= ?
+                AND anonymized_at IS NULL
+                AND legal_hold = FALSE
+            """,
+            (
+                current_time,
+                current_time
+            )
+        )
+
+        cleanup_counts[
+            "abuse_anonymized"
+        ] = abuse_cursor.rowcount or 0
+
+        # ====================================================
+        # ===== ABUSE REPORT ANONYMIZATION END =====
+        # ====================================================
+
+
+        # ====================================================
+        # ===== PRIVACY REQUEST ANONYMIZATION START =====
+        # ====================================================
+
+        privacy_cursor = connection.execute(
+            """
+            UPDATE privacy_requests
+
+            SET
+                full_name = 'Anonymized User',
+                email = 'anonymized@invalid.local',
+                access_code = NULL,
+                request_details = 'Personal data removed after retention period.',
+                rejection_reason = NULL,
+                anonymized_at = ?
+
+            WHERE
+                retention_until IS NOT NULL
+                AND retention_until <= ?
+                AND anonymized_at IS NULL
+            """,
+            (
+                current_time,
+                current_time
+            )
+        )
+
+        cleanup_counts[
+            "privacy_anonymized"
+        ] = privacy_cursor.rowcount or 0
+
+        # ====================================================
+        # ===== PRIVACY REQUEST ANONYMIZATION END =====
+        # ====================================================
+
+
+        # ====================================================
+        # ===== EXPIRED AUDIT LOG DELETE START =====
+        # ====================================================
+
+        audit_cursor = connection.execute(
+            """
+            DELETE FROM audit_logs
+
+            WHERE
+                retention_until IS NOT NULL
+                AND retention_until <= ?
+            """,
+            (
+                current_time,
+            )
+        )
+
+        cleanup_counts[
+            "audit_deleted"
+        ] = audit_cursor.rowcount or 0
+
+        # ====================================================
+        # ===== EXPIRED AUDIT LOG DELETE END =====
+        # ====================================================
+
+
+        connection.commit()
+
+    except Exception as error:
+
+        if connection is not None:
+
+            try:
+
+                connection.rollback()
+
+            except Exception:
+
+                pass
+
+        print(
+            "GDPR personal data cleanup failed:",
+            error
+        )
+
+    finally:
+
+        if connection is not None:
+
+            connection.close()
+
+    return cleanup_counts
+
+# ============================================================
+# ===== GDPR PERSONAL DATA RETENTION CLEANUP END =====
+# ============================================================
 # ===== 18. PERIODIC CLEANUP BEFORE REQUEST START =====
 
 @app.before_request
@@ -1368,6 +1589,7 @@ def run_periodic_cleanup():
     ):
 
         cleanup_expired_files()
+        cleanup_expired_personal_data()
 
         last_cleanup_timestamp = (
             current_timestamp
@@ -1555,7 +1777,93 @@ def create_support_requests_table():
 # ===== SUPPORT REQUESTS TABLE END =====
 # ============================================================
 
+# ============================================================
+# ===== GDPR AUDIT LOG HELPER START =====
+# ============================================================
 
+def create_audit_log(
+    event_type,
+    entity_type,
+    entity_id,
+    action,
+    event_details=None,
+    actor_type="admin",
+    actor_identifier=None
+):
+
+    connection = None
+
+    try:
+
+        connection = get_database_connection()
+
+        connection.execute(
+            """
+            INSERT INTO audit_logs (
+
+                event_type,
+                entity_type,
+                entity_id,
+                action,
+                actor_type,
+                actor_identifier,
+                event_details,
+                ip_address,
+                created_at,
+                retention_until
+
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                event_type,
+                entity_type,
+                str(entity_id) if entity_id is not None else None,
+                action,
+                actor_type,
+                actor_identifier,
+                event_details,
+                request.remote_addr,
+                datetime.now().isoformat(),
+                (
+                    datetime.now()
+                    +
+                    timedelta(
+                        days=AUDIT_LOG_RETENTION_DAYS
+                    )
+                ).isoformat()
+            )
+        )
+
+        connection.commit()
+
+        return True
+
+    except Exception as error:
+
+        if connection is not None:
+
+            try:
+                connection.rollback()
+
+            except Exception:
+                pass
+
+        print(
+            "Audit log creation failed:",
+            error
+        )
+
+        return False
+
+    finally:
+
+        if connection is not None:
+            connection.close()
+
+# ============================================================
+# ===== GDPR AUDIT LOG HELPER END =====
+# ============================================================
 # ============================================================
 # ===== SECURITY RESPONSE HEADERS START =====
 # ============================================================
@@ -1886,7 +2194,281 @@ def privacy_page():
 # ============================================================
 # ===== PRIVACY PAGE ROUTE END =====
 # ============================================================
+# ============================================================
+# ===== GDPR PRIVACY REQUEST PAGE ROUTE START =====
+# ============================================================
 
+@app.route(
+    "/privacy-request",
+    methods=["GET", "POST"]
+)
+@limiter.limit("5 per hour")
+def privacy_request_page():
+
+    success_message = None
+    error_message = None
+    request_reference = None
+
+    allowed_request_types = {
+        "access",
+        "rectification",
+        "erasure",
+        "restriction",
+        "objection",
+        "portability"
+    }
+
+    if request.method == "POST":
+
+        full_name = request.form.get(
+            "full_name",
+            ""
+        ).strip()
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        request_type = request.form.get(
+            "request_type",
+            ""
+        ).strip().lower()
+
+        access_code = request.form.get(
+            "access_code",
+            ""
+        ).strip()
+
+        request_details = request.form.get(
+            "request_details",
+            ""
+        ).strip()
+
+        declaration = request.form.get(
+            "declaration",
+            ""
+        )
+
+        # ====================================================
+        # ===== PRIVACY REQUEST VALIDATION START =====
+        # ====================================================
+
+        if not full_name:
+
+            error_message = (
+                "Please enter your full name."
+            )
+
+        elif len(full_name) > 80:
+
+            error_message = (
+                "Full name cannot exceed 80 characters."
+            )
+
+        elif (
+            not email
+            or
+            "@" not in email
+            or
+            "." not in email.split("@")[-1]
+        ):
+
+            error_message = (
+                "Please enter a valid email address."
+            )
+
+        elif len(email) > 120:
+
+            error_message = (
+                "Email address cannot exceed 120 characters."
+            )
+
+        elif request_type not in allowed_request_types:
+
+            error_message = (
+                "Please select a valid privacy request type."
+            )
+
+        elif (
+            access_code
+            and
+            not (
+                access_code.isdigit()
+                and
+                len(access_code) == 6
+            )
+        ):
+
+            error_message = (
+                "Access code must contain exactly 6 digits."
+            )
+
+        elif not request_details:
+
+            error_message = (
+                "Please explain your privacy request."
+            )
+
+        elif len(request_details) > 3000:
+
+            error_message = (
+                "Request details cannot exceed 3000 characters."
+            )
+
+        elif declaration != "yes":
+
+            error_message = (
+                "Please confirm the declaration."
+            )
+
+        # ====================================================
+        # ===== PRIVACY REQUEST VALIDATION END =====
+        # ====================================================
+
+
+        # ====================================================
+        # ===== SAVE PRIVACY REQUEST START =====
+        # ====================================================
+
+        if error_message is None:
+
+            submitted_at = datetime.now()
+
+            response_due_at = (
+                submitted_at
+                +
+                timedelta(
+                    days=30
+                )
+            )
+
+            request_reference = (
+                "FY-PR-"
+                +
+                submitted_at.strftime(
+                    "%Y%m%d"
+                )
+                +
+                "-"
+                +
+                secrets.token_hex(
+                    4
+                ).upper()
+            )
+
+            connection = None
+
+            try:
+
+                connection = get_database_connection()
+
+                connection.execute(
+                    """
+                    INSERT INTO privacy_requests (
+
+                        request_reference,
+                        full_name,
+                        email,
+                        request_type,
+                        access_code,
+                        request_details,
+                        identity_status,
+                        status,
+                        rejection_reason,
+                        submitted_at,
+                        response_due_at,
+                        completed_at,
+                        updated_at
+
+                    )
+                    VALUES (
+                        ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?
+                    )
+                    """,
+                    (
+                        request_reference,
+                        full_name,
+                        email,
+                        request_type,
+                        access_code or None,
+                        request_details,
+                        "pending",
+                        "pending",
+                        None,
+                        submitted_at.isoformat(),
+                        response_due_at.isoformat(),
+                        None,
+                        submitted_at.isoformat()
+                    )
+                )
+
+                connection.commit()
+                create_audit_log(
+                    event_type="privacy_request_submission",
+                    entity_type="privacy_request",
+                    entity_id=request_reference,
+                    action="request_submitted",
+                    actor_type="user",
+                    actor_identifier=None,
+                    event_details=(
+                        f"Privacy request type: {request_type}"
+                    )
+                )
+                success_message = (
+                    "Your privacy request was submitted successfully. "
+                    "Please save the reference number shown below. "
+                    "Fyloq may contact you for identity verification."
+                )
+
+            except Exception as error:
+
+                if connection is not None:
+
+                    try:
+
+                        connection.rollback()
+
+                    except Exception:
+
+                        pass
+
+                print(
+                    "Privacy request submission failed:",
+                    error
+                )
+
+                request_reference = None
+
+                error_message = (
+                    "Your privacy request could not be submitted. "
+                    "Please try again."
+                )
+
+            finally:
+
+                if connection is not None:
+
+                    connection.close()
+
+        # ====================================================
+        # ===== SAVE PRIVACY REQUEST END =====
+        # ====================================================
+
+    return render_template(
+        "privacy_request.html",
+
+        success_message=success_message,
+
+        error_message=error_message,
+
+        request_reference=request_reference
+    )
+
+# ============================================================
+# ===== GDPR PRIVACY REQUEST PAGE ROUTE END =====
+# ============================================================
 # ============================================================
 # ===== TERMS PAGE ROUTE START =====
 # ============================================================
@@ -2297,7 +2879,17 @@ def admin_login():
             session["admin_logged_in"] = True
 
             session.permanent = True
-
+            create_audit_log(
+                event_type="admin_login",
+                entity_type="admin_session",
+                entity_id=ADMIN_USERNAME,
+                action="login_successful",
+                actor_type="admin",
+                actor_identifier=ADMIN_USERNAME,
+                event_details=(
+                    "Administrator logged in successfully."
+                )
+            )
             return redirect(
                 url_for("admin_dashboard")
             )
@@ -2738,7 +3330,7 @@ def admin_cleanup_files():
 def admin_delete_file(file_id):
 
     if not session.get("admin_logged_in"):
-
+        
         return redirect(
             url_for("admin_login")
         )
@@ -2923,6 +3515,8 @@ def admin_delete_file(file_id):
 def admin_expire_file(file_id):
 
     if not session.get("admin_logged_in"):
+        
+
 
         return redirect(
             url_for("admin_login")
@@ -3016,7 +3610,18 @@ def admin_expire_file(file_id):
         )
 
         connection.commit()
-
+        create_audit_log(
+            event_type="file_expiry",
+            entity_type="uploaded_file",
+            entity_id=file_id,
+            action="manually_expired",
+            actor_type="admin",
+            actor_identifier=ADMIN_USERNAME,
+            event_details=(
+                "Administrator manually expired the file "
+                "and removed its encrypted storage object."
+            )
+        )
     except Exception as error:
 
         try:
@@ -3329,19 +3934,81 @@ def admin_update_support_status(request_id):
             )
         )
 
+    updated_at = datetime.now()
+
+    resolved_at = None
+    closed_at = None
+    retention_until = None
+
+    if new_status == "solved":
+
+        resolved_at = updated_at.isoformat()
+
+    elif new_status == "closed":
+
+        closed_at = updated_at.isoformat()
+
+        retention_until = (
+            updated_at
+            +
+            timedelta(
+                days=SUPPORT_RETENTION_DAYS
+            )
+        ).isoformat()
+
     connection.execute(
         """
         UPDATE support_requests
-        SET status = ?
+
+        SET
+            status = ?,
+            resolved_at = CASE
+                WHEN ? IS NOT NULL
+                THEN ?
+                ELSE resolved_at
+            END,
+            closed_at = CASE
+                WHEN ? IS NOT NULL
+                THEN ?
+                ELSE closed_at
+            END,
+            retention_until = CASE
+                WHEN ? IS NOT NULL
+                THEN ?
+                ELSE retention_until
+            END
+
         WHERE id = ?
         """,
         (
             new_status,
+
+            resolved_at,
+            resolved_at,
+
+            closed_at,
+            closed_at,
+
+            retention_until,
+            retention_until,
+
             request_id
         )
     )
 
     connection.commit()
+
+    create_audit_log(
+        event_type="support_request_update",
+        entity_type="support_request",
+        entity_id=request_id,
+        action="status_updated",
+        actor_type="admin",
+        actor_identifier=ADMIN_USERNAME,
+        event_details=(
+            f"Support request status changed to: {new_status}"
+        )
+    )
 
     connection.close()
 
@@ -3634,7 +4301,393 @@ def admin_abuse_reports():
 # ============================================================
 # ===== ADMIN ABUSE REPORTS ROUTE END =====
 # ============================================================
+# ============================================================
+# ===== ADMIN PRIVACY REQUESTS START =====
+# ============================================================
 
+@app.route("/admin/privacy-requests")
+def admin_privacy_requests():
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+    search_query = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    status_filter = request.args.get(
+        "status",
+        ""
+    ).strip().lower()
+
+    allowed_statuses = {
+        "pending",
+        "identity_check",
+        "processing",
+        "completed",
+        "rejected"
+    }
+
+    if status_filter not in allowed_statuses:
+
+        status_filter = ""
+
+    query = """
+        SELECT *
+        FROM privacy_requests
+        WHERE 1 = 1
+    """
+
+    parameters = []
+
+    if search_query:
+
+        search_pattern = (
+            "%"
+            +
+            search_query.lower()
+            +
+            "%"
+        )
+
+        query += """
+            AND (
+                LOWER(request_reference) LIKE ?
+                OR LOWER(full_name) LIKE ?
+                OR LOWER(email) LIKE ?
+                OR LOWER(COALESCE(access_code, '')) LIKE ?
+            )
+        """
+
+        parameters.extend(
+            [
+                search_pattern,
+                search_pattern,
+                search_pattern,
+                search_pattern
+            ]
+        )
+
+    if status_filter:
+
+        query += """
+            AND status = ?
+        """
+
+        parameters.append(
+            status_filter
+        )
+
+    query += """
+        ORDER BY submitted_at DESC
+    """
+
+    connection = None
+    privacy_requests = []
+
+    try:
+
+        connection = get_database_connection()
+
+        cursor = connection.execute(
+            query,
+            tuple(parameters)
+        )
+
+        privacy_requests = cursor.fetchall()
+
+    except Exception as error:
+
+        print(
+            "Admin privacy request list failed:",
+            error
+        )
+
+    finally:
+
+        if connection is not None:
+
+            connection.close()
+
+    message = request.args.get(
+        "message",
+        ""
+    ).strip()
+
+    return render_template(
+        "admin_privacy_requests.html",
+
+        privacy_requests=privacy_requests,
+
+        search_query=search_query,
+
+        status_filter=status_filter,
+
+        message=message
+    )
+
+@app.route("/admin/audit-logs")
+def admin_audit_logs():
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+    connection = None
+    audit_logs = []
+
+    try:
+
+        connection = get_database_connection()
+
+        cursor = connection.execute(
+            """
+            SELECT *
+            FROM audit_logs
+            ORDER BY created_at DESC
+            LIMIT 500
+            """
+        )
+
+        audit_logs = cursor.fetchall()
+
+    except Exception as error:
+
+        print(
+            "Audit log list failed:",
+            error
+        )
+
+    finally:
+
+        if connection is not None:
+
+            connection.close()
+
+    return render_template(
+        "admin_audit_logs.html",
+        audit_logs=audit_logs
+    )
+
+
+# ============================================================
+# ===== ADMIN PRIVACY REQUEST UPDATE START =====
+# ============================================================
+
+@app.route(
+    "/admin/privacy-requests/<int:request_id>/update",
+    methods=["POST"]
+)
+def admin_update_privacy_request(
+    request_id
+):
+
+    if not session.get("admin_logged_in"):
+
+        return redirect(
+            url_for("admin_login")
+        )
+
+    allowed_identity_statuses = {
+        "pending",
+        "verified",
+        "failed"
+    }
+
+    allowed_request_statuses = {
+        "pending",
+        "identity_check",
+        "processing",
+        "completed",
+        "rejected"
+    }
+
+    identity_status = request.form.get(
+        "identity_status",
+        ""
+    ).strip().lower()
+
+    request_status = request.form.get(
+        "status",
+        ""
+    ).strip().lower()
+
+    rejection_reason = request.form.get(
+        "rejection_reason",
+        ""
+    ).strip()
+
+    if identity_status not in allowed_identity_statuses:
+
+        return redirect(
+            url_for(
+                "admin_privacy_requests",
+                message=(
+                    "Invalid identity status."
+                )
+            )
+        )
+
+    if request_status not in allowed_request_statuses:
+
+        return redirect(
+            url_for(
+                "admin_privacy_requests",
+                message=(
+                    "Invalid privacy request status."
+                )
+            )
+        )
+
+    if len(rejection_reason) > 500:
+
+        return redirect(
+            url_for(
+                "admin_privacy_requests",
+                message=(
+                    "Rejection reason cannot exceed "
+                    "500 characters."
+                )
+            )
+        )
+
+    if (
+        request_status == "rejected"
+        and
+        not rejection_reason
+    ):
+
+        return redirect(
+            url_for(
+                "admin_privacy_requests",
+                message=(
+                    "A rejection reason is required "
+                    "when rejecting a request."
+                )
+            )
+        )
+
+    if request_status != "rejected":
+
+        rejection_reason = None
+
+    updated_at = datetime.now()
+
+    completed_at = None
+    retention_until = None
+
+    if request_status in {
+        "completed",
+        "rejected"
+    }:
+
+        completed_at = (
+            updated_at.isoformat()
+        )
+
+        retention_until = (
+            updated_at
+            +
+            timedelta(
+                days=PRIVACY_REQUEST_RETENTION_DAYS
+            )
+        ).isoformat()
+
+    connection = None
+
+    try:
+
+        connection = get_database_connection()
+
+        connection.execute(
+            """
+            UPDATE privacy_requests
+
+            SET
+                identity_status = ?,
+                status = ?,
+                rejection_reason = ?,
+                completed_at = ?,
+                retention_until = ?,
+                updated_at = ?
+
+            WHERE id = ?
+            """,
+            (
+                identity_status,
+                request_status,
+                rejection_reason,
+                completed_at,
+                retention_until,
+                updated_at.isoformat(),
+                request_id
+            )
+        )
+
+        connection.commit()
+        create_audit_log(
+            event_type="privacy_request_update",
+            entity_type="privacy_request",
+            entity_id=request_id,
+            action="status_updated",
+            actor_type="admin",
+            actor_identifier=ADMIN_USERNAME,
+            event_details=(
+                f"Identity status changed to: {identity_status}; "
+                f"Request status changed to: {request_status}"
+            )
+        )
+
+    except Exception as error:
+
+        if connection is not None:
+
+            try:
+
+                connection.rollback()
+
+            except Exception:
+
+                pass
+
+        print(
+            "Privacy request update failed:",
+            error
+        )
+
+        return redirect(
+            url_for(
+                "admin_privacy_requests",
+                message=(
+                    "Privacy request could not be updated."
+                )
+            )
+        )
+
+    finally:
+
+        if connection is not None:
+
+            connection.close()
+
+    return redirect(
+        url_for(
+            "admin_privacy_requests",
+            message=(
+                "Privacy request updated successfully."
+            )
+        )
+    )
+
+# ============================================================
+# ===== ADMIN PRIVACY REQUESTS END =====
+# ============================================================
 
 # ============================================================
 # ===== ADMIN UPDATE ABUSE STATUS ROUTE START =====
@@ -3706,19 +4759,84 @@ def admin_update_abuse_status(report_id):
         )
 
 
+    updated_at = datetime.now()
+
+    resolved_at = None
+    closed_at = None
+    retention_until = None
+
+    if new_status == "Resolved":
+
+        resolved_at = updated_at.isoformat()
+
+    elif new_status == "Closed":
+
+        closed_at = updated_at.isoformat()
+
+        retention_until = (
+            updated_at
+            +
+            timedelta(
+                days=ABUSE_RETENTION_DAYS
+            )
+        ).isoformat()
+
     connection.execute(
         """
         UPDATE report_abuse
-        SET status = ?
+
+        SET
+            status = ?,
+
+            resolved_at = CASE
+                WHEN ? IS NOT NULL
+                THEN ?
+                ELSE resolved_at
+            END,
+
+            closed_at = CASE
+                WHEN ? IS NOT NULL
+                THEN ?
+                ELSE closed_at
+            END,
+
+            retention_until = CASE
+                WHEN ? IS NOT NULL
+                THEN ?
+                ELSE retention_until
+            END
+
         WHERE id = ?
         """,
         (
             new_status,
+
+            resolved_at,
+            resolved_at,
+
+            closed_at,
+            closed_at,
+
+            retention_until,
+            retention_until,
+
             report_id
         )
     )
 
     connection.commit()
+
+    create_audit_log(
+        event_type="abuse_report_update",
+        entity_type="abuse_report",
+        entity_id=report_id,
+        action="status_updated",
+        actor_type="admin",
+        actor_identifier=ADMIN_USERNAME,
+        event_details=(
+            f"Abuse report status changed to: {new_status}"
+        )
+    )
 
     connection.close()
 
@@ -3742,6 +4860,20 @@ def admin_update_abuse_status(report_id):
 
 @app.route("/admin-logout")
 def admin_logout():
+
+    if session.get("admin_logged_in"):
+
+        create_audit_log(
+            event_type="admin_logout",
+            entity_type="admin_session",
+            entity_id=ADMIN_USERNAME,
+            action="logout",
+            actor_type="admin",
+            actor_identifier=ADMIN_USERNAME,
+            event_details=(
+                "Administrator logged out."
+            )
+        )
 
     session.clear()
 

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Fyloq administrator audit log management."
+    >
+
+    <title>Audit Logs | Fyloq Admin</title>
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin.css') }}"
+    >
+
+</head>
+
+<body class="admin-dashboard-body">
+
+    <div class="admin-dashboard-layout">
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN SIDEBAR START ===== -->
+        <!-- ================================================== -->
+
+        <aside class="admin-sidebar">
+
+            <a
+                href="{{ url_for('admin_dashboard') }}"
+                class="sidebar-brand"
+            >
+
+                <span class="sidebar-brand-icon">
+
+                    <img
+                        src="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+                        alt="Fyloq"
+                    >
+
+                </span>
+
+                <div>
+
+                    <strong>
+                        Fyloq
+                    </strong>
+
+                    <small>
+                        Admin Panel
+                    </small>
+
+                </div>
+
+            </a>
+
+
+            <nav class="sidebar-navigation">
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="sidebar-link"
+                >
+
+                    <span>▦</span>
+
+                    Dashboard
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_support_requests') }}"
+                    class="sidebar-link"
+                >
+
+                    <span>🎧</span>
+
+                    Support Requests
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_abuse_reports') }}"
+                    class="sidebar-link"
+                >
+
+                    <span>⚠️</span>
+
+                    Abuse Reports
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_privacy_requests') }}"
+                    class="sidebar-link"
+                >
+
+                    <span>🛡️</span>
+
+                    Privacy Requests
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_audit_logs') }}"
+                    class="sidebar-link active"
+                >
+
+                    <span>📋</span>
+
+                    Audit Logs
+
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar-footer">
+
+                <a
+                    href="/"
+                    class="sidebar-secondary-link"
+                >
+
+                    <span>←</span>
+
+                    View Website
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_logout') }}"
+                    class="sidebar-logout-link"
+                >
+
+                    <span>⇥</span>
+
+                    Logout
+
+                </a>
+
+            </div>
+
+        </aside>
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN SIDEBAR END ===== -->
+        <!-- ================================================== -->
+
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN MAIN CONTENT START ===== -->
+        <!-- ================================================== -->
+
+        <main class="admin-main-content">
+
+            <header class="admin-topbar">
+
+                <div>
+
+                    <span class="admin-page-label">
+                        SECURITY & COMPLIANCE
+                    </span>
+
+                    <h1>
+                        Audit Logs
+                    </h1>
+
+                    <p>
+
+                        Review recorded privacy, support, abuse and
+                        administrative actions performed in Fyloq.
+
+                    </p>
+
+                </div>
+
+
+                <div class="admin-topbar-actions">
+
+                    <a
+                        href="{{ url_for('admin_audit_logs') }}"
+                        class="admin-refresh-button"
+                    >
+                        Refresh
+                    </a>
+
+                    <a
+                        href="{{ url_for('admin_logout') }}"
+                        class="admin-topbar-logout"
+                    >
+                        Logout
+                    </a>
+
+                </div>
+
+            </header>
+
+
+            <section class="admin-files-section">
+
+                <div class="files-section-header">
+
+                    <div>
+
+                        <h2>
+                            Recent Audit Events
+                        </h2>
+
+                        <p>
+                            Latest 500 audit events are shown.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="admin-support-list">
+
+                    {% for audit_log in audit_logs %}
+
+                        <article class="admin-support-card">
+
+                            <div class="admin-support-card-header">
+
+                                <div>
+
+                                    <span class="admin-support-ticket">
+
+                                        LOG-{{ audit_log["id"] }}
+
+                                    </span>
+
+                                    <h3>
+
+                                        {{ audit_log["event_type"]
+                                            .replace("_", " ")
+                                            .title()
+                                        }}
+
+                                    </h3>
+
+                                </div>
+
+
+                                <span class="admin-status-badge status-active">
+
+                                    {{ audit_log["actor_type"]
+                                        .replace("_", " ")
+                                        .title()
+                                    }}
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="admin-support-user-grid">
+
+                                <div>
+
+                                    <span>
+                                        Entity Type
+                                    </span>
+
+                                    <strong>
+
+                                        {{ audit_log["entity_type"]
+                                            .replace("_", " ")
+                                            .title()
+                                        }}
+
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Entity ID
+                                    </span>
+
+                                    <strong>
+                                        {{ audit_log["entity_id"] or "Not available" }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Action
+                                    </span>
+
+                                    <strong>
+
+                                        {{ audit_log["action"]
+                                            .replace("_", " ")
+                                            .title()
+                                        }}
+
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Actor
+                                    </span>
+
+                                    <strong>
+                                        {{ audit_log["actor_identifier"] or audit_log["actor_type"] }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        IP Address
+                                    </span>
+
+                                    <strong>
+                                        {{ audit_log["ip_address"] or "Not recorded" }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="admin-support-message-box">
+
+                                <span>
+                                    EVENT DETAILS
+                                </span>
+
+                                <p>
+
+                                    {{ audit_log["event_details"]
+                                        or "No additional event details recorded."
+                                    }}
+
+                                </p>
+
+                            </div>
+
+
+                            <div class="admin-support-user-grid">
+
+                                <div>
+
+                                    <span>
+                                        Created At
+                                    </span>
+
+                                    <strong>
+                                        {{ audit_log["created_at"] }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Retention Until
+                                    </span>
+
+                                    <strong>
+                                        {{ audit_log["retention_until"] or "Not set" }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    {% else %}
+
+                        <div class="admin-support-empty">
+
+                            <div>
+                                📋
+                            </div>
+
+                            <strong>
+                                No audit logs found
+                            </strong>
+
+                            <p>
+
+                                Privacy, support, abuse and admin actions
+                                will appear here after they are recorded.
+
+                            </p>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+
+            <footer class="admin-dashboard-footer">
+
+                <p>
+                    Fyloq Audit Log Management
+                </p>
+
+                <span>
+                    Developed by Jhanak Uprade
+                </span>
+
+            </footer>
+
+        </main>
+
+        <!-- ================================================== -->
+        <!-- ===== ADMIN MAIN CONTENT END ===== -->
+        <!-- ================================================== -->
+
+    </div>
+
+</body>
+
+</html>

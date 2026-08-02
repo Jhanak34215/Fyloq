@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Fyloq administrator privacy request management."
+    >
+
+    <title>Privacy Requests | Fyloq Admin</title>
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin.css') }}"
+    >
+
+</head>
+
+<body class="admin-dashboard-body">
+
+    <div class="admin-dashboard-layout">
+
+        <aside class="admin-sidebar">
+
+            <a
+                href="{{ url_for('admin_dashboard') }}"
+                class="sidebar-brand"
+            >
+
+                <span class="sidebar-brand-icon">
+
+                    <img
+                        src="{{ url_for('static', filename='images/fyloq-icon.svg') }}"
+                        alt="Fyloq"
+                    >
+
+                </span>
+
+                <div>
+
+                    <strong>
+                        Fyloq
+                    </strong>
+
+                    <small>
+                        Admin Panel
+                    </small>
+
+                </div>
+
+            </a>
+
+
+            <nav class="sidebar-navigation">
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="sidebar-link"
+                >
+
+                    <span>▦</span>
+
+                    Dashboard
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_support_requests') }}"
+                    class="sidebar-link"
+                >
+
+                    <span>🎧</span>
+
+                    Support Requests
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_abuse_reports') }}"
+                    class="sidebar-link"
+                >
+
+                    <span>⚠️</span>
+
+                    Abuse Reports
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_privacy_requests') }}"
+                    class="sidebar-link active"
+                >
+
+                    <span>🛡️</span>
+
+                    Privacy Requests
+
+                </a>
+                <a
+                    href="{{ url_for('admin_audit_logs') }}"
+                    class="sidebar-link"
+                >
+                    <span>📋</span>
+
+                    Audit Logs
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar-footer">
+
+                <a
+                    href="/"
+                    class="sidebar-secondary-link"
+                >
+
+                    <span>←</span>
+
+                    View Website
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_logout') }}"
+                    class="sidebar-logout-link"
+                >
+
+                    <span>⇥</span>
+
+                    Logout
+
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <main class="admin-main-content">
+
+            <header class="admin-topbar">
+
+                <div>
+
+                    <span class="admin-page-label">
+                        GDPR MANAGEMENT
+                    </span>
+
+                    <h1>
+                        Privacy Requests
+                    </h1>
+
+                    <p>
+                        Review identity status, deadlines and completion state.
+                    </p>
+
+                </div>
+
+
+                <div class="admin-topbar-actions">
+
+                    <a
+                        href="{{ url_for('admin_privacy_requests') }}"
+                        class="admin-refresh-button"
+                    >
+                        Refresh
+                    </a>
+
+                    <a
+                        href="{{ url_for('admin_logout') }}"
+                        class="admin-topbar-logout"
+                    >
+                        Logout
+                    </a>
+
+                </div>
+
+            </header>
+
+
+            <section class="admin-files-section">
+
+                <div class="files-section-header">
+
+                    <div>
+
+                        <h2>
+                            Submitted Privacy Requests
+                        </h2>
+
+                        <p>
+                            Search and update GDPR data-subject requests.
+                        </p>
+
+                    </div>
+
+
+                    <form
+                        method="GET"
+                        action="{{ url_for('admin_privacy_requests') }}"
+                        class="admin-search-form"
+                    >
+
+                        <input
+                            type="search"
+                            name="search"
+                            value="{{ search_query }}"
+                            placeholder="Search reference, name or email"
+                            maxlength="120"
+                        >
+
+
+                        <select name="status">
+
+                            <option value="">
+                                All Status
+                            </option>
+
+                            {% for option in [
+                                "pending",
+                                "identity_check",
+                                "processing",
+                                "completed",
+                                "rejected"
+                            ] %}
+
+                                <option
+                                    value="{{ option }}"
+                                    {% if status_filter == option %}
+                                        selected
+                                    {% endif %}
+                                >
+
+                                    {{ option.replace("_", " ").title() }}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+
+                        <button type="submit">
+                            Search
+                        </button>
+
+
+                        {% if search_query or status_filter %}
+
+                            <a
+                                href="{{ url_for('admin_privacy_requests') }}"
+                                class="admin-clear-filter"
+                            >
+                                Clear
+                            </a>
+
+                        {% endif %}
+
+                    </form>
+
+                </div>
+
+
+                {% if message %}
+
+                    <div class="admin-dashboard-message">
+                        {{ message }}
+                    </div>
+
+                {% endif %}
+
+
+                <div class="admin-support-list">
+
+                    {% for privacy_request in privacy_requests %}
+
+                        <article class="admin-support-card">
+
+                            <div class="admin-support-card-header">
+
+                                <div>
+
+                                    <span class="admin-support-ticket">
+                                        {{ privacy_request["request_reference"] }}
+                                    </span>
+
+                                    <h3>
+                                        {{ privacy_request["request_type"].replace("_", " ").title() }}
+                                    </h3>
+
+                                </div>
+
+
+                                <span
+                                    class="admin-status-badge privacy-status-{{ privacy_request['status'] }}"
+                                >
+                                    {{ privacy_request["status"].replace("_", " ").title() }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="admin-support-user-grid">
+
+                                <div>
+
+                                    <span>
+                                        Name
+                                    </span>
+
+                                    <strong>
+                                        {{ privacy_request["full_name"] }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Email
+                                    </span>
+
+                                    <a
+                                        href="mailto:{{ privacy_request['email'] }}"
+                                    >
+                                        {{ privacy_request["email"] }}
+                                    </a>
+    
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Access Code
+                                    </span>
+
+                                    <strong>
+                                        {{ privacy_request["access_code"] or "Not provided" }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Identity
+                                    </span>
+
+                                    <strong>
+                                        {{ privacy_request["identity_status"].replace("_", " ").title() }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Due Date
+                                    </span>
+
+                                    <strong>
+                                        {{ privacy_request["response_due_at"] }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="admin-support-message-box">
+
+                                <span>
+                                    REQUEST DETAILS
+                                </span>
+
+                                <p>
+                                    {{ privacy_request["request_details"] }}
+                                </p>
+
+                            </div>
+
+
+                            {% if privacy_request["rejection_reason"] %}
+
+                                <div class="admin-support-message-box">
+
+                                    <span>
+                                        REJECTION REASON
+                                    </span>
+
+                                    <p>
+                                        {{ privacy_request["rejection_reason"] }}
+                                    </p>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div class="admin-support-actions">
+
+                                <a
+                                    href="mailto:{{ privacy_request['email'] }}"
+                                    class="admin-support-email-button"
+                                >
+                                    Reply by Email
+                                </a>
+
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'admin_update_privacy_request',
+                                        request_id=privacy_request['id']
+                                    ) }}"
+                                    class="admin-support-status-form"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+
+                                    <select
+                                        name="identity_status"
+                                        required
+                                    >
+
+                                        {% for option in [
+                                            "pending",
+                                            "verified",
+                                            "failed"
+                                        ] %}
+
+                                            <option
+                                                value="{{ option }}"
+                                                {% if privacy_request["identity_status"] == option %}
+                                                    selected
+                                                {% endif %}
+                                            >
+
+                                                Identity:
+                                                {{ option.replace("_", " ").title() }}
+
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+
+                                    <select
+                                        name="status"
+                                        required
+                                    >
+
+                                        {% for option in [
+                                            "pending",
+                                            "identity_check",
+                                            "processing",
+                                            "completed",
+                                            "rejected"
+                                        ] %}
+
+                                            <option
+                                                value="{{ option }}"
+                                                {% if privacy_request["status"] == option %}
+                                                    selected
+                                                {% endif %}
+                                            >
+
+                                                {{ option.replace("_", " ").title() }}
+
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+
+                                    <input
+                                        type="text"
+                                        name="rejection_reason"
+                                        value="{{ privacy_request['rejection_reason'] or '' }}"
+                                        placeholder="Rejection reason if applicable"
+                                        maxlength="500"
+                                    >
+
+
+                                    <button type="submit">
+                                        Update
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </article>
+
+                    {% else %}
+
+                        <div class="admin-support-empty">
+
+                            <div>
+                                🛡️
+                            </div>
+
+                            <strong>
+                                No privacy requests found
+                            </strong>
+
+                            <p>
+                                Submitted privacy requests will appear here.
+                            </p>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+
+            <footer class="admin-dashboard-footer">
+
+                <p>
+                    Fyloq Privacy Request Management
+                </p>
+
+                <span>
+                    Developed by Jhanak Uprade
+                </span>
+
+            </footer>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>
